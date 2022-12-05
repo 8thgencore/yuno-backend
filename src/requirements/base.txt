@@ -1,0 +1,13 @@
+fastapi==0.88.0
+uvicorn[standard]==0.20.0
+
+# db
+sqlmodel==0.0.8
+asyncpg==0.27.0
+alembic==1.8.1
+sqlalchemy-utils==0.38.3
+
+# utils
+loguru==0.6.0
+environs==9.5.0
+orjson==3.8.3
