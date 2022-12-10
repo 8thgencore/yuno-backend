@@ -5,7 +5,7 @@ from typing import List
 
 from environs import Env
 
-from app import logging
+from app.core import logging
 
 
 @dataclass
@@ -18,23 +18,23 @@ class Application:
 
 @dataclass
 class DbConfig:
-    host: str
-    password: str
-    user: str
-    database: str
-    port: int
-    uri: str = ""
+    USER: str
+    PASSWORD: str
+    HOST: str
+    PORT: int
+    DATABASE: str
+    DATABASE_URI: str = ""
 
     def __post_init__(self) -> None:
-        self.uri = f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
+        self.DATABASE_URI = f"postgresql+asyncpg://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DATABASE}"
 
 
 @dataclass
 class RedisConfig:
-    host: str
-    port: int
-    password: str
-    pool_size: int
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_PASS: str
+    REDIS_POOL_SIZE: int
 
 
 @dataclass
@@ -42,6 +42,13 @@ class LogConfig:
     file_name: str
     rotation: time
     retention: timedelta
+
+
+@dataclass
+class Authentication:
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_MINUTES: int
+    SECRET_KEY: str
 
 
 @dataclass
@@ -55,6 +62,7 @@ class Config:
     db: DbConfig
     redis: RedisConfig
     log: LogConfig
+    auth: Authentication
     misc: Miscellaneous
 
 
@@ -71,22 +79,27 @@ def load_config(path: str | None = None) -> Config:
             cors_origins=env.str("BACKEND_CORS_ORIGINS", "*"),
         ),
         db=DbConfig(
-            host=env.str("DB_HOST"),
-            password=env.str("DB_PASS"),
-            user=env.str("DB_USER"),
-            database=env.str("DB_NAME"),
-            port=env.int("DB_PORT"),
+            USER=env.str("DB_USER"),
+            PASSWORD=env.str("DB_PASS"),
+            HOST=env.str("DB_HOST"),
+            PORT=env.int("DB_PORT"),
+            DATABASE=env.str("DB_NAME"),
         ),
         redis=RedisConfig(
-            host=env.str("REDIS_HOST"),
-            password=env.str("REDIS_PASS"),
-            port=env.int("REDIS_PORT"),
-            pool_size=env.int("REDIS_POOL_SIZE"),
+            REDIS_HOST=env.str("REDIS_HOST"),
+            REDIS_PASS=env.str("REDIS_PASS"),
+            REDIS_PORT=env.int("REDIS_PORT"),
+            REDIS_POOL_SIZE=env.int("REDIS_POOL_SIZE"),
         ),
         log=LogConfig(
             file_name=env.str("LOG_FILE_NAME"),
             rotation=datetime.strptime(env.str("LOG_ROTATION"), "%H:%M").time(),
             retention=timedelta(days=env.int("LOG_RETENTION")),
+        ),
+        auth=Authentication(
+            ACCESS_TOKEN_EXPIRE_MINUTES=60 * 24 * 8,
+            REFRESH_TOKEN_EXPIRE_MINUTES=60 * 24 * 180,
+            SECRET_KEY="sdsdsd",
         ),
         misc=Miscellaneous(),
     )
@@ -95,10 +108,10 @@ def load_config(path: str | None = None) -> Config:
 @lru_cache()
 def load_log_config():
     logging.setup(
-        config.log.file_name,
-        config.log.rotation,
-        config.log.retention,
+        settings.log.file_name,
+        settings.log.rotation,
+        settings.log.retention,
     )
 
 
-config = load_config('.env')
+settings = load_config(".env")

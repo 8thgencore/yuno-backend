@@ -1,7 +1,7 @@
 # Example configuration for Black.
 
 [tool.black]
-line-length = 119
+line-length = 100
 target-version = ['py38']
 include = '\.pyi?$'
 extend-exclude = '''
@@ -19,7 +19,7 @@ preview = true
 
 
 [tool.isort]
-line_length = 119
+line_length = 100
 
 # Build system information below.
 # NOTE: You don't need this in your own Black configuration.
