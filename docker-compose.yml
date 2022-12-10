@@ -34,7 +34,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASS:-postgres}
       - POSTGRES_DB=${DB_NAME:-db}
 
-  redis_server:
+  redis-server:
     container_name: ${REDIS_CONTAINER_NAME:-yuno-pgadmin-container}
     image: "redis:alpine"
     restart: unless-stopped
@@ -42,6 +42,10 @@ services:
       - "6379"
     env_file:
       - ./src/.env
+    environment:
+      - REDIS_MASTER_HOST=${REDIS_HOST:-redis-server}
+      - REDIS_MASTER_PORT_NUMBER=${REDIS_PORT:-6379}
+      - REDIS_MASTER_PASSWORD=${REDIS_PASSWORD:-my_master_password}
 
   pgadmin:
     container_name: ${PGADMIN_CONTAINER_NAME:-yuno-pgadmin-container}

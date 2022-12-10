@@ -33,7 +33,7 @@ class DbConfig:
 class RedisConfig:
     REDIS_HOST: str
     REDIS_PORT: int
-    REDIS_PASS: str
+    REDIS_PASSWORD: str
     REDIS_POOL_SIZE: int
 
 
@@ -87,8 +87,8 @@ def load_config(path: str | None = None) -> Config:
         ),
         redis=RedisConfig(
             REDIS_HOST=env.str("REDIS_HOST"),
-            REDIS_PASS=env.str("REDIS_PASS"),
             REDIS_PORT=env.int("REDIS_PORT"),
+            REDIS_PASSWORD=env.str("REDIS_PASSWORD"),
             REDIS_POOL_SIZE=env.int("REDIS_POOL_SIZE"),
         ),
         log=LogConfig(

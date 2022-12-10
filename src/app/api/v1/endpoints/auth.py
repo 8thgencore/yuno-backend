@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Any
 
 from aioredis import Redis
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from pydantic import EmailStr
 
 from app import crud
@@ -10,15 +10,20 @@ from app.api import deps
 from app.api.deps import get_redis_client
 from app.core import security
 from app.core.config import settings
+from app.models.role_model import Role
+from app.models.user_model import User
+from app.utils.exceptions import IdNotFoundException
 from app.schemas.common_schema import IMetaGeneral, TokenType
 from app.schemas.response_schema import IPostResponseBase, create_response
+from app.schemas.role_schema import IRoleEnum
 from app.schemas.token_schema import RefreshToken, Token, TokenRead
+from app.schemas.user_schema import IUserCreate, IUserRead
 from app.utils.token import add_token_to_redis, delete_tokens, get_valid_tokens
 
 router = APIRouter()
 
 
-@router.post("", response_model=IPostResponseBase[Token])
+@router.post("/login", response_model=IPostResponseBase[Token])
 async def login(
     email: EmailStr = Body(...),
     password: str = Body(...),
@@ -33,8 +38,8 @@ async def login(
         raise HTTPException(status_code=400, detail="Email or Password incorrect")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="User is inactive")
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token_expires = timedelta(minutes=settings.auth.REFRESH_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(user.id, expires_delta=access_token_expires)
     refresh_token = security.create_refresh_token(user.id, expires_delta=refresh_token_expires)
     data = Token(
@@ -63,3 +68,36 @@ async def login(
         )
 
     return create_response(meta=meta_data, data=data, message="Login correctly")
+
+
+@router.post("/register", response_model=IPostResponseBase[IUserRead], status_code=status.HTTP_201_CREATED)
+async def register(
+    email: EmailStr = Body(...),
+    password: str = Body(...),
+    confirm_password: str = Body(...),
+) -> Any:
+    """
+    Create new user
+    """
+    
+    if password != confirm_password:
+        raise  HTTPException(
+            status_code=400,
+            detail="Password & Confirm Password do not match",
+        )
+
+    new_user = IUserCreate(
+            first_name="",
+            last_name="",
+            password=password,
+            email=email,
+            is_active=True,
+            is_superuser=False,
+        )
+    # role = await crud.role.get(id=new_user.role_id)
+    # if not role:
+    #     raise IdNotFoundException(Role, id=new_user.role_id)
+    
+    user = await crud.user.create_with_role(obj_in=new_user)
+    return create_response(data=user)
+    
