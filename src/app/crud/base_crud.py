@@ -12,7 +12,6 @@ from sqlmodel import SQLModel, func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel.sql.expression import Select
 
-
 ModelType = TypeVar("ModelType", bound=SQLModel)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
@@ -68,7 +67,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             query = select(self.model).offset(skip).limit(limit).order_by(self.model.id)
         response = await db_session.execute(query)
         return response.scalars().all()
-
 
     async def create(
         self,

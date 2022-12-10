@@ -15,6 +15,7 @@ class IResponseBase(GenericModel, Generic[T]):
 class IGetResponseBase(IResponseBase[DataType], Generic[DataType]):
     message: str = "Data got correctly"
 
+
 class IPostResponseBase(IResponseBase[DataType], Generic[DataType]):
     message: str = "Data created correctly"
 

@@ -11,8 +11,8 @@ from loguru import logger
 
 from app.api import ping
 from app.api.deps import get_redis_client
-from app.core.config import load_log_config, settings
 from app.api.v1.api import api_router as api_router_v1
+from app.core.config import load_log_config, settings
 
 
 # Initialize the application
