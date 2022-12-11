@@ -21,16 +21,16 @@ def create_application() -> FastAPI:
     logger.info("Starting application")
 
     app = FastAPI(
-        title=settings.app.title,
-        version=settings.app.version,
-        description=settings.app.description,
+        title=settings.APP_TITLE,
+        version=settings.APP_VERSION,
+        description=settings.APP_DESCRIPTION,
         openapi_url="/openapi.json",
         docs_url="/",
     )
 
     app.add_middleware(
         SQLAlchemyMiddleware,
-        db_url=settings.db.DATABASE_URI,
+        db_url=settings.ASYNC_DB_URI,
         engine_args={
             "echo": False,
             "pool_pre_ping": True,
@@ -40,17 +40,17 @@ def create_application() -> FastAPI:
     )
 
     # Set all CORS enabled origins
-    if settings.app.cors_origins:
+    if settings.BACKEND_CORS_ORIGINS:
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=[str(origin) for origin in settings.app.cors_origins],
+            allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
         )
 
     app.include_router(ping.router)
-    app.include_router(api_router_v1, prefix="/api/v1")
+    app.include_router(api_router_v1, prefix=settings.API_PREFIX)
 
     return app
 

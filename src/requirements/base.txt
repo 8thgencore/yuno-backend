@@ -13,7 +13,6 @@ fastapi-cache2[redis]==0.1.9
 
 # utils
 loguru==0.6.0
-environs==9.5.0
 orjson==3.8.3
 
 python-jose[cryptography]==3.3.0

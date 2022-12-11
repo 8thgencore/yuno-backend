@@ -41,8 +41,8 @@ async def login(
         raise HTTPException(status_code=400, detail="Email or Password incorrect")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="User is inactive")
-    access_token_expires = timedelta(minutes=settings.auth.ACCESS_TOKEN_EXPIRE_MINUTES)
-    refresh_token_expires = timedelta(minutes=settings.auth.REFRESH_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(user.id, expires_delta=access_token_expires)
     refresh_token = security.create_refresh_token(user.id, expires_delta=refresh_token_expires)
     data = Token(
@@ -58,7 +58,7 @@ async def login(
             user,
             access_token,
             TokenType.ACCESS,
-            settings.auth.ACCESS_TOKEN_EXPIRE_MINUTES,
+            settings.ACCESS_TOKEN_EXPIRE_MINUTES,
         )
     valid_refresh_tokens = await get_valid_tokens(redis_client, user.id, TokenType.REFRESH)
     if valid_refresh_tokens:
@@ -67,7 +67,7 @@ async def login(
             user,
             refresh_token,
             TokenType.REFRESH,
-            settings.auth.REFRESH_TOKEN_EXPIRE_MINUTES,
+            settings.REFRESH_TOKEN_EXPIRE_MINUTES,
         )
 
     return create_response(meta=meta_data, data=data, message="Login correctly")
@@ -133,8 +133,8 @@ async def change_password(
         obj_current=current_user, obj_new={"hashed_password": new_hashed_password}
     )
 
-    access_token_expires = timedelta(minutes=settings.auth.ACCESS_TOKEN_EXPIRE_MINUTES)
-    refresh_token_expires = timedelta(minutes=settings.auth.REFRESH_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(current_user.id, expires_delta=access_token_expires)
     refresh_token = security.create_refresh_token(
         current_user.id, expires_delta=refresh_token_expires
@@ -153,14 +153,14 @@ async def change_password(
         current_user,
         access_token,
         TokenType.ACCESS,
-        settings.auth.ACCESS_TOKEN_EXPIRE_MINUTES,
+        settings.ACCESS_TOKEN_EXPIRE_MINUTES,
     )
     await add_token_to_redis(
         redis_client,
         current_user,
         refresh_token,
         TokenType.REFRESH,
-        settings.auth.REFRESH_TOKEN_EXPIRE_MINUTES,
+        settings.REFRESH_TOKEN_EXPIRE_MINUTES,
     )
 
     return create_response(data=data, message="New password generated")
@@ -179,7 +179,7 @@ async def login_access_token(
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
-    access_token_expires = timedelta(minutes=settings.auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(user.id, expires_delta=access_token_expires)
     valid_access_tokens = await get_valid_tokens(redis_client, user.id, TokenType.ACCESS)
     if valid_access_tokens:
@@ -188,7 +188,7 @@ async def login_access_token(
             user,
             access_token,
             TokenType.ACCESS,
-            settings.auth.ACCESS_TOKEN_EXPIRE_MINUTES,
+            settings.ACCESS_TOKEN_EXPIRE_MINUTES,
         )
     return {
         "access_token": access_token,
@@ -211,7 +211,7 @@ async def get_refresh_token(
     try:
         payload = jwt.decode(
             body.refresh_token,
-            settings.auth.SECRET_KEY,
+            settings.SECRET_KEY,
             algorithms=[security.ALGORITHM],
         )
     except (jwt.JWTError, ValidationError):
@@ -223,7 +223,7 @@ async def get_refresh_token(
         if valid_refresh_tokens and body.refresh_token not in valid_refresh_tokens:
             raise HTTPException(status_code=403, detail="Refresh token invalid")
 
-        access_token_expires = timedelta(minutes=settings.auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         user = await crud.user.get(id=user_id)
         if user.is_active:
             access_token = security.create_access_token(
@@ -238,7 +238,7 @@ async def get_refresh_token(
                     user,
                     access_token,
                     TokenType.ACCESS,
-                    settings.auth.ACCESS_TOKEN_EXPIRE_MINUTES,
+                    settings.ACCESS_TOKEN_EXPIRE_MINUTES,
                 )
             return create_response(
                 data=TokenRead(access_token=access_token, token_type="bearer"),

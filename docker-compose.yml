@@ -18,14 +18,14 @@ services:
     env_file:
       - ./src/.env
     depends_on:
-      - yuno-db
+      - db
 
-  yuno-db:
+  db:
     container_name: ${DB_CONTAINER_NAME:-yuno-db-container}
     image: postgres:14-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    expose:
+    expose: 
       - 5432
     env_file:
       - ./src/.env
@@ -35,11 +35,11 @@ services:
       - POSTGRES_DB=${DB_NAME:-db}
 
   redis-server:
-    container_name: ${REDIS_CONTAINER_NAME:-yuno-pgadmin-container}
+    container_name: ${REDIS_CONTAINER_NAME:-yuno-redis-container}
     image: "redis:alpine"
     restart: unless-stopped
-    expose:
-      - "6379"
+    expose: 
+      - 6379
     env_file:
       - ./src/.env
     environment:
@@ -51,15 +51,15 @@ services:
     container_name: ${PGADMIN_CONTAINER_NAME:-yuno-pgadmin-container}
     image: dpage/pgadmin4
     environment:
-       PGADMIN_DEFAULT_EMAIL: admin@axelm.space
-       PGADMIN_DEFAULT_PASSWORD: password_1337!
-       PGADMIN_LISTEN_PORT: 80
+      PGADMIN_DEFAULT_EMAIL: admin@axelm.space
+      PGADMIN_DEFAULT_PASSWORD: password_1337!
+      PGADMIN_LISTEN_PORT: 80
     ports:
-        - 15432:80
+      - 15432:80
     volumes:
-        - pgadmin:/var/lib/pgadmin
+      - pgadmin:/var/lib/pgadmin
     depends_on:
-        - yuno-db
+      - db
 
 
 volumes:

@@ -19,12 +19,15 @@ from app.schemas.user_schema import IUserCreate, IUserRead
 from app.utils.token import get_valid_tokens
 from app.utils.uuid6 import uuid6
 
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/access-token", scheme_name="JWT")
+reusable_oauth2 = OAuth2PasswordBearer(
+    tokenUrl=f"{settings.API_PREFIX}/auth/access-token",
+    scheme_name="JWT",
+)
 
 
 async def get_redis_client() -> Redis:
     redis = aioredis.from_url(
-        f"redis://{settings.redis.REDIS_HOST}:{settings.redis.REDIS_PORT}",
+        f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
         max_connections=10,
         encoding="utf8",
         decode_responses=True,
@@ -48,7 +51,7 @@ def get_current_user(required_roles: List[str] = None) -> User:
         redis_client: Redis = Depends(get_redis_client),
     ) -> User:
         try:
-            payload = jwt.decode(token, settings.auth.SECRET_KEY, algorithms=[security.ALGORITHM])
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[security.ALGORITHM])
         except (jwt.JWTError, ValidationError):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
