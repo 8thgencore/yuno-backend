@@ -4,10 +4,11 @@ uvicorn[standard]==0.20.0
 # db
 sqlmodel==0.0.8
 asyncpg==0.27.0
-alembic==1.8.1
+alembic==1.9.0
 pydantic[email]==1.10.2
 sqlalchemy-utils==0.38.3
 fastapi-async-sqlalchemy==0.3.12
+fastapi-pagination==0.11.1
 aioredis==2.0.1
 fastapi-cache2[redis]==0.1.9
 

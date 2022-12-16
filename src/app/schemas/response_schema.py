@@ -1,9 +1,18 @@
-from typing import Any, Dict, Generic, Optional, TypeVar, Union
+import math
+from typing import Any, Dict, Generic, Optional, Sequence, TypeVar, Union
 
+from fastapi_pagination import Page, Params
+from fastapi_pagination.bases import AbstractPage, AbstractParams
 from pydantic.generics import GenericModel
 
 DataType = TypeVar("DataType")
 T = TypeVar("T")
+
+
+class PageBase(Page[T], Generic[T]):
+    pages: int
+    next_page: Optional[int]
+    previous_page: Optional[int]
 
 
 class IResponseBase(GenericModel, Generic[T]):
@@ -12,7 +21,39 @@ class IResponseBase(GenericModel, Generic[T]):
     data: Optional[T]
 
 
+class IResponsePage(AbstractPage[T], Generic[T]):
+    message: str = ""
+    meta: Dict = {}
+    data: PageBase[T]
+
+    __params_type__ = Params  # Set params related to Page
+
+    @classmethod
+    def create(
+        cls,
+        items: Sequence[T],
+        total: int,
+        params: AbstractParams,
+    ) -> Union[PageBase[T], None]:
+        pages = math.ceil(total / params.size)
+        return cls(
+            data=PageBase(
+                items=items,
+                page=params.page,
+                size=params.size,
+                total=total,
+                pages=pages,
+                next_page=params.page + 1 if params.page < pages else None,
+                previous_page=params.page - 1 if params.page > 1 else None,
+            )
+        )
+
+
 class IGetResponseBase(IResponseBase[DataType], Generic[DataType]):
+    message: str = "Data got correctly"
+
+
+class IGetResponsePaginated(IResponsePage[DataType], Generic[DataType]):
     message: str = "Data got correctly"
 
 
@@ -33,6 +74,10 @@ def create_response(
     message: Optional[str] = "",
     meta: Optional[Union[Dict, Any]] = {},
 ) -> Union[Dict[str, DataType], DataType]:
+    if isinstance(data, IResponsePage):
+        data.message = "Data paginated correctly" if not message else message
+        data.meta = meta
+        return data
     body_response = {"data": data, "message": message, "meta": meta}
     # It returns a dictionary to avoid doble
     # validation https://github.com/tiangolo/fastapi/issues/3021

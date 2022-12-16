@@ -14,10 +14,10 @@ from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models.user_model import User
+from app.schemas.auth_schema import IAuthRegister
 from app.schemas.common_schema import IMetaGeneral, TokenType
 from app.schemas.user_schema import IUserCreate, IUserRead
 from app.utils.token import get_valid_tokens
-from app.utils.uuid6 import uuid6
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_PREFIX}/auth/access-token",
@@ -88,7 +88,7 @@ def get_current_user(required_roles: List[str] = None) -> User:
     return current_user
 
 
-async def user_exists(new_user: IUserCreate) -> IUserCreate:
+async def user_exists(new_user: IUserCreate | IAuthRegister) -> IUserCreate:
     user = await crud.user.get_by_email(email=new_user.email)
     if user:
         raise HTTPException(

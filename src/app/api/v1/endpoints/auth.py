@@ -5,7 +5,7 @@ from aioredis import Redis
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt
-from pydantic import EmailStr, ValidationError
+from pydantic import ValidationError
 
 from app import crud
 from app.api import deps
@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
 from app.models.role_model import Role
 from app.models.user_model import User
+from app.schemas.auth_schema import IAuthLogin, IAuthRegister
 from app.schemas.common_schema import IMetaGeneral, TokenType
 from app.schemas.response_schema import IPostResponseBase, create_response
 from app.schemas.role_schema import IRoleEnum
@@ -28,15 +29,14 @@ router = APIRouter()
 
 @router.post("/login", response_model=IPostResponseBase[Token])
 async def login(
-    email: EmailStr = Body(...),
-    password: str = Body(...),
+    login_user: IAuthLogin,
     meta_data: IMetaGeneral = Depends(deps.get_general_meta),
     redis_client: Redis = Depends(get_redis_client),
 ) -> Any:
     """
     Login for all users
     """
-    user = await crud.user.authenticate(email=email, password=password)
+    user = await crud.user.authenticate(email=login_user.email, password=login_user.password)
     if not user:
         raise HTTPException(status_code=400, detail="Email or Password incorrect")
     elif not user.is_active:
@@ -52,7 +52,7 @@ async def login(
         user=user,
     )
     valid_access_tokens = await get_valid_tokens(redis_client, user.id, TokenType.ACCESS)
-    if valid_access_tokens:
+    if not valid_access_tokens:
         await add_token_to_redis(
             redis_client,
             user,
@@ -61,7 +61,7 @@ async def login(
             settings.ACCESS_TOKEN_EXPIRE_MINUTES,
         )
     valid_refresh_tokens = await get_valid_tokens(redis_client, user.id, TokenType.REFRESH)
-    if valid_refresh_tokens:
+    if not valid_refresh_tokens:
         await add_token_to_redis(
             redis_client,
             user,
@@ -79,24 +79,17 @@ async def login(
     status_code=status.HTTP_201_CREATED,
 )
 async def register(
-    email: EmailStr = Body(...),
-    password: str = Body(...),
-    confirm_password: str = Body(...),
+    register_user: IAuthRegister = Depends(deps.user_exists),
 ) -> Any:
     """
     Create new user
     """
-    if password != confirm_password:
-        raise HTTPException(
-            status_code=400,
-            detail="Password & Confirm Password do not match",
-        )
-
     new_user = IUserCreate(
         first_name="",
         last_name="",
-        password=password,
-        email=email,
+        email=register_user.email,
+        username=register_user.username,
+        password=register_user.password,
         is_active=True,
         is_superuser=False,
     )
@@ -108,7 +101,7 @@ async def register(
     return create_response(data=user)
 
 
-@router.post("/change_password", response_model=IPostResponseBase[Token])
+@router.post("/change-password", response_model=IPostResponseBase[Token])
 async def change_password(
     current_password: str = Body(...),
     new_password: str = Body(...),
@@ -197,7 +190,7 @@ async def login_access_token(
 
 
 @router.post(
-    "/refresh_token",
+    "/refresh-token",
     response_model=IPostResponseBase[TokenRead],
     status_code=201,
 )
