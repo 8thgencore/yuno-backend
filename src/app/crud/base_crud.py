@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -7,7 +7,6 @@ from fastapi.encoders import jsonable_encoder
 from fastapi_async_sqlalchemy import db
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.async_sqlalchemy import paginate
-from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import exc
 from sqlmodel import SQLModel, func, select
@@ -34,7 +33,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.model = model
 
     async def get(
-        self, *, id: Union[UUID, str], db_session: Optional[AsyncSession] = None
+        self, *, id: UUID | str, db_session: Optional[AsyncSession] = None
     ) -> Optional[ModelType]:
         db_session = db_session or db.session
         query = select(self.model).where(self.model.id == id)
@@ -44,7 +43,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     async def get_by_ids(
         self,
         *,
-        list_ids: List[Union[UUID, str]],
+        list_ids: List[UUID | str],
         db_session: Optional[AsyncSession] = None,
     ) -> Optional[List[ModelType]]:
         db_session = db_session or db.session
@@ -63,7 +62,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         *,
         skip: int = 0,
         limit: int = 100,
-        query: Optional[Union[T, Select[T]]] = None,
+        query: Optional[T | Select[T]] = None,
         db_session: Optional[AsyncSession] = None,
     ) -> List[ModelType]:
         db_session = db_session or db.session
@@ -88,16 +87,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             order_by = self.model.id
 
         if order == IOrderEnum.ascendent:
-            query = (
-                select(self.model).offset(skip).limit(limit).order_by(columns[order_by.value].asc())
-            )
+            query = select(self.model).offset(skip).limit(limit).order_by(columns[order_by].asc())
         else:
-            query = (
-                select(self.model)
-                .offset(skip)
-                .limit(limit)
-                .order_by(columns[order_by.value].desc())
-            )
+            query = select(self.model).offset(skip).limit(limit).order_by(columns[order_by].desc())
 
         response = await db_session.execute(query)
         return response.scalars().all()
@@ -106,7 +98,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self,
         *,
         params: Optional[Params] = Params(),
-        query: Optional[Union[T, Select[T]]] = None,
+        query: Optional[T | Select[T]] = None,
         db_session: Optional[AsyncSession] = None,
     ) -> Page[ModelType]:
         db_session = db_session or db.session
@@ -120,7 +112,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         params: Optional[Params] = Params(),
         order_by: Optional[str] = None,
         order: Optional[IOrderEnum] = IOrderEnum.ascendent,
-        query: Optional[Union[T, Select[T]]] = None,
+        query: Optional[T | Select[T]] = None,
         db_session: Optional[AsyncSession] = None,
     ) -> Page[ModelType]:
         db_session = db_session or db.session
@@ -132,17 +124,17 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         if query is None:
             if order == IOrderEnum.ascendent:
-                query = select(self.model).order_by(columns[order_by.value].asc())
+                query = select(self.model).order_by(columns[order_by].asc())
             else:
-                query = select(self.model).order_by(columns[order_by.value].desc())
+                query = select(self.model).order_by(columns[order_by].desc())
 
         return await paginate(db_session, query, params)
 
     async def create(
         self,
         *,
-        obj_in: Union[CreateSchemaType, ModelType],
-        created_by_id: Optional[Union[UUID, str]] = None,
+        obj_in: CreateSchemaType | ModelType,
+        created_by_id: Optional[UUID | str] = None,
         db_session: Optional[AsyncSession] = None,
     ) -> ModelType:
         db_session = db_session or db.session
@@ -168,7 +160,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self,
         *,
         obj_current: ModelType,
-        obj_new: Union[UpdateSchemaType, Dict[str, Any], ModelType],
+        obj_new: UpdateSchemaType | Dict[str, Any] | ModelType,
         db_session: Optional[AsyncSession] = None,
     ) -> ModelType:
         db_session = db_session or db.session
@@ -192,7 +184,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return obj_current
 
     async def remove(
-        self, *, id: Union[UUID, str], db_session: Optional[AsyncSession] = None
+        self, *, id: UUID | str, db_session: Optional[AsyncSession] = None
     ) -> ModelType:
         db_session = db_session or db.session
         response = await db_session.execute(select(self.model).where(self.model.id == id))

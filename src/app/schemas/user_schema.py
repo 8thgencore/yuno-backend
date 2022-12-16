@@ -11,7 +11,7 @@ class IUserCreate(UserBase):
     password: Optional[str]
 
     class Config:
-        hashed_password = "Main"
+        hashed_password = None
 
 
 # All these fields are optional

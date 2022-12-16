@@ -111,7 +111,6 @@ async def change_password(
     """
     Change password
     """
-
     if not verify_password(current_password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid Current Password")
 
@@ -213,19 +212,15 @@ async def get_refresh_token(
     if payload["type"] == "refresh":
         user_id = payload["sub"]
         valid_refresh_tokens = await get_valid_tokens(redis_client, user_id, TokenType.REFRESH)
-        if valid_refresh_tokens and body.refresh_token not in valid_refresh_tokens:
+        if not valid_refresh_tokens and body.refresh_token not in valid_refresh_tokens:
             raise HTTPException(status_code=403, detail="Refresh token invalid")
 
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         user = await crud.user.get(id=user_id)
         if user.is_active:
-            access_token = security.create_access_token(
-                payload["sub"], expires_delta=access_token_expires
-            )
-            valid_access_get_valid_tokens = await get_valid_tokens(
-                redis_client, user.id, TokenType.ACCESS
-            )
-            if valid_access_get_valid_tokens:
+            access_token = security.create_access_token(user.id, expires_delta=access_token_expires)
+            valid_access_tokens = await get_valid_tokens(redis_client, user.id, TokenType.ACCESS)
+            if valid_access_tokens:
                 await add_token_to_redis(
                     redis_client,
                     user,

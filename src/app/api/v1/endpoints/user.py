@@ -1,18 +1,23 @@
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from fastapi_pagination import Params
-from sqlmodel import select
 
 from app import crud
 from app.api import deps
 from app.models import User
 from app.models.role_model import Role
 from app.models.user_model import UserBase
-from app.schemas.response_schema import (IDeleteResponseBase, IGetResponseBase,
-                                         IGetResponsePaginated, IPostResponseBase, IPutResponseBase,
-                                         create_response)
+from app.schemas.common_schema import IOrderEnum
+from app.schemas.response_schema import (
+    IDeleteResponseBase,
+    IGetResponseBase,
+    IGetResponsePaginated,
+    IPostResponseBase,
+    IPutResponseBase,
+    create_response,
+)
 from app.schemas.role_schema import IRoleEnum
 from app.schemas.user_schema import IUserCreate, IUserRead, IUserReadWithoutProjects, IUserUpdate
 from app.utils.exceptions import IdNotFoundException, UserSelfDeleteException
@@ -44,15 +49,17 @@ async def read_users_list(
 
 @router.get("/list/by_created_at", response_model=IGetResponseBase[List[IUserReadWithoutProjects]])
 async def get_user_list_order_by_created_at(
-    # params: Params = Depends(),
+    order: Optional[IOrderEnum] = Query(
+        default=IOrderEnum.ascendent, description="It is optional. Default is ascendent"
+    ),
+    params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
 ):
     """
     Gets a paginated list of users ordered by created datetime
     """
-    query = select(User).order_by(User.created_at)
-    users = await crud.user.get_multi(query=query)
-    # users = await crud.user.get_multi_paginated(query=query, params=params)
+    users = await crud.user.get_multi_ordered(order=order, order_by="created_at")
+    # users = await crud.user.get_multi_paginated_ordered(params=params, order_by="created_at")
     return create_response(data=users)
 
 

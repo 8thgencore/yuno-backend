@@ -21,6 +21,13 @@ class CRUDUser(CRUDBase[User, IUserCreate, IUserUpdate]):
         user = await db_session.execute(select(User).where(User.email == email))
         return user.scalar_one_or_none()
 
+    async def get_by_username(
+        self, *, username: str, db_session: Optional[AsyncSession] = None
+    ) -> Optional[User]:
+        db_session = db_session or db.session
+        user = await db_session.execute(select(User).where(User.username == username))
+        return user.scalar_one_or_none()
+
     async def create_with_role(
         self, *, obj_in: IUserCreate, db_session: Optional[AsyncSession] = None
     ) -> User:

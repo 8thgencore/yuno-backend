@@ -11,8 +11,8 @@ class IMetaGeneral(BaseModel):
 
 
 class IOrderEnum(str, Enum):
-    ascendent = "ascendent"
-    descendent = "descendent"
+    ascendent = "asc"
+    descendent = "desc"
 
 
 class TokenType(str, Enum):
