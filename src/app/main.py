@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+from fastapi_pagination import add_pagination
 from loguru import logger
 
 from app.api import ping
@@ -51,6 +52,7 @@ def create_application() -> FastAPI:
 
     app.include_router(ping.router)
     app.include_router(api_router_v1, prefix=settings.API_PREFIX)
+    add_pagination(app)
 
     return app
 

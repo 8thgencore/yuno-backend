@@ -17,11 +17,11 @@ class UserBase(SQLModel):
         sa_column=Column(DateTime(timezone=True), nullable=True)
     )  # birthday with timezone
     phone: Optional[str]
+    role_id: Optional[UUID] = Field(default=None, foreign_key="Role.id")
 
 
 class User(BaseUUIDModel, UserBase, table=True):
     hashed_password: Optional[str] = Field(nullable=False, index=True)
-    role_id: Optional[UUID] = Field(default=None, foreign_key="Role.id")
     role: Optional["Role"] = Relationship(  # noqa: F821
         back_populates="users", sa_relationship_kwargs={"lazy": "selectin"}
     )

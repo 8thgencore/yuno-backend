@@ -9,15 +9,6 @@ from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
 from app.core import logging
 
 
-@lru_cache()
-def load_log_config():
-    logging.setup(
-        settings.LOG_FILE_NAME,
-        settings.LOG_ROTATION,
-        settings.LOG_RETENTION,
-    )
-
-
 class Settings(BaseSettings):
     # Application
     APP_TITLE: str = "yuno"
@@ -101,6 +92,15 @@ class Settings(BaseSettings):
 def get_settings() -> BaseSettings:
     logger.info("Loading config settings from the environment...")
     return Settings()
+
+
+@lru_cache()
+def load_log_config():
+    logging.setup(
+        settings.LOG_FILE_NAME,
+        settings.LOG_ROTATION,
+        settings.LOG_RETENTION,
+    )
 
 
 settings = get_settings()

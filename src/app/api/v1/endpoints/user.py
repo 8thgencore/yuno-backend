@@ -10,14 +10,9 @@ from app.models import User
 from app.models.role_model import Role
 from app.models.user_model import UserBase
 from app.schemas.common_schema import IOrderEnum
-from app.schemas.response_schema import (
-    IDeleteResponseBase,
-    IGetResponseBase,
-    IGetResponsePaginated,
-    IPostResponseBase,
-    IPutResponseBase,
-    create_response,
-)
+from app.schemas.response_schema import (IDeleteResponseBase, IGetResponseBase,
+                                         IGetResponsePaginated, IPostResponseBase, IPutResponseBase,
+                                         create_response)
 from app.schemas.role_schema import IRoleEnum
 from app.schemas.user_schema import IUserCreate, IUserRead, IUserReadWithoutProjects, IUserUpdate
 from app.utils.exceptions import IdNotFoundException, UserSelfDeleteException
@@ -35,19 +30,19 @@ async def get_my_data(
     return create_response(data=current_user)
 
 
-@router.get("/list", response_model=IGetResponseBase[List[IUserReadWithoutProjects]])
+@router.get("/list", response_model=IGetResponsePaginated[IUserReadWithoutProjects])
 async def read_users_list(
-    # params: Params = Depends(),
+    params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
 ):
     """
     Retrieve users. Requires admin or manager role
     """
-    users = await crud.user.get_multi()
+    users = await crud.user.get_multi_paginated(params=params)
     return create_response(data=users)
 
 
-@router.get("/list/by_created_at", response_model=IGetResponseBase[List[IUserReadWithoutProjects]])
+@router.get("/list/by_created_at", response_model=IGetResponsePaginated[IUserReadWithoutProjects])
 async def get_user_list_order_by_created_at(
     order: Optional[IOrderEnum] = Query(
         default=IOrderEnum.ascendent, description="It is optional. Default is ascendent"
@@ -58,8 +53,11 @@ async def get_user_list_order_by_created_at(
     """
     Gets a paginated list of users ordered by created datetime
     """
-    users = await crud.user.get_multi_ordered(order=order, order_by="created_at")
-    # users = await crud.user.get_multi_paginated_ordered(params=params, order_by="created_at")
+    users = await crud.user.get_multi_paginated_ordered(
+        params=params,
+        order=order,
+        order_by="created_at",
+    )
     return create_response(data=users)
 
 

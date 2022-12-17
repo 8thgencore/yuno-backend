@@ -1,25 +1,25 @@
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app import crud
-from app.core.config import settings
 from app.schemas.role_schema import IRoleCreate
 from app.schemas.user_schema import IUserCreate
 
 roles: List[IRoleCreate] = [
-    IRoleCreate(name="admin", description="This the Admin role"),
+    IRoleCreate(name="admin", description="Admin role"),
     IRoleCreate(name="manager", description="Manager role"),
     IRoleCreate(name="user", description="User role"),
 ]
 
-users: List[Dict[str, Union[str, IUserCreate]]] = [
+users: List[Dict[str, str | IUserCreate]] = [
     {
         "data": IUserCreate(
             first_name="Admin",
             last_name="FastAPI",
+            email="admin@example.com",
+            username="admin",
             password="qwerty",
-            email="admin@exmaple.com",
             is_superuser=True,
         ),
         "role": "admin",
@@ -28,8 +28,9 @@ users: List[Dict[str, Union[str, IUserCreate]]] = [
         "data": IUserCreate(
             first_name="Manager",
             last_name="FastAPI",
-            password="qwerty",
             email="manager@example.com",
+            username="manager",
+            password="qwerty",
             is_superuser=False,
         ),
         "role": "manager",
@@ -38,8 +39,9 @@ users: List[Dict[str, Union[str, IUserCreate]]] = [
         "data": IUserCreate(
             first_name="User",
             last_name="FastAPI",
-            password="qwerty",
             email="user@example.com",
+            username="user",
+            password="qwerty",
             is_superuser=False,
         ),
         "role": "user",

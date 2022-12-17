@@ -4,7 +4,7 @@ This creates sample users on database.
 
 *Using docker compose command*
 ```
-docker compose -f docker-compose.yml exec web python app/initial_data.py
+docker compose -f docker-compose.yml exec web python -m app.initial_data
 ```
 
 ## Run Alembic migrations (Only if you change the DB model)

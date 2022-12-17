@@ -10,3 +10,8 @@ class IAuthRegister(BaseModel):
     email: EmailStr
     username: str
     password: str
+
+
+class IAuthChangePassword(BaseModel):
+    current: str
+    new: str

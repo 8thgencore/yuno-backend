@@ -15,7 +15,7 @@ from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
 from app.models.role_model import Role
 from app.models.user_model import User
-from app.schemas.auth_schema import IAuthLogin, IAuthRegister
+from app.schemas.auth_schema import IAuthChangePassword, IAuthLogin, IAuthRegister
 from app.schemas.common_schema import IMetaGeneral, TokenType
 from app.schemas.response_schema import IPostResponseBase, create_response
 from app.schemas.role_schema import IRoleEnum
@@ -103,24 +103,23 @@ async def register(
 
 @router.post("/change-password", response_model=IPostResponseBase[Token])
 async def change_password(
-    current_password: str = Body(...),
-    new_password: str = Body(...),
+    password: IAuthChangePassword,
     current_user: User = Depends(deps.get_current_user()),
     redis_client: Redis = Depends(get_redis_client),
 ) -> Any:
     """
     Change password
     """
-    if not verify_password(current_password, current_user.hashed_password):
+    if not verify_password(password.current, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid Current Password")
 
-    if verify_password(new_password, current_user.hashed_password):
+    if verify_password(password.new, current_user.hashed_password):
         raise HTTPException(
             status_code=400,
             detail="New Password should be different that the current one",
         )
 
-    new_hashed_password = get_password_hash(new_password)
+    new_hashed_password = get_password_hash(password.new)
     await crud.user.update(
         obj_current=current_user, obj_new={"hashed_password": new_hashed_password}
     )
