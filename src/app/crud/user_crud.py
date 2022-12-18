@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from fastapi_async_sqlalchemy import db
@@ -41,8 +41,8 @@ class CRUDUser(CRUDBase[User, IUserCreate, IUserUpdate]):
         return db_obj
 
     async def update_is_active(
-        self, *, db_obj: List[User], obj_in: Union[int, str, Dict[str, Any]]
-    ) -> Union[User, None]:
+        self, *, db_obj: List[User], obj_in: int | str | Dict[str, Any]
+    ) -> User | None:
         response = None
         for x in db_obj:
             setattr(x, "is_active", obj_in.is_active)
@@ -61,9 +61,7 @@ class CRUDUser(CRUDBase[User, IUserCreate, IUserUpdate]):
             return None
         return user
 
-    async def remove(
-        self, *, id: Union[UUID, str], db_session: Optional[AsyncSession] = None
-    ) -> User:
+    async def remove(self, *, id: UUID | str, db_session: Optional[AsyncSession] = None) -> User:
         db_session = db_session or db.session
         response = await db_session.execute(select(self.model).where(self.model.id == id))
         obj = response.scalar_one()

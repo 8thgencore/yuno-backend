@@ -7,16 +7,37 @@ from app import crud
 from app.api import deps
 from app.models.role_model import Role
 from app.models.user_model import User
-from app.schemas.response_schema import (IGetResponseBase, IGetResponsePaginated, IPostResponseBase,
-                                         IPutResponseBase, create_response)
+from app.schemas.response_schema import (
+    IGetResponseBase,
+    IGetResponsePaginated,
+    IPostResponseBase,
+    IPutResponseBase,
+    create_response,
+)
 from app.schemas.role_schema import IRoleCreate, IRoleEnum, IRoleRead, IRoleUpdate
 from app.utils.exceptions import ContentNoChangeException, IdNotFoundException, NameExistException
 
 router = APIRouter()
 
 
-@router.get("", response_model=IGetResponsePaginated[IRoleRead])
-async def get_roles(
+@router.post("", response_model=IPostResponseBase[IRoleRead], status_code=status.HTTP_201_CREATED)
+async def create_role(
+    role: IRoleCreate,
+    current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
+):
+    """
+    Create a new role
+    """
+    role_current = await crud.role.get_role_by_name(name=role.name)
+    if not role_current:
+        new_permission = await crud.role.create(obj_in=role)
+        return create_response(data=new_permission)
+    else:
+        raise NameExistException(Role, name=role_current.name)
+
+
+@router.get("/list", response_model=IGetResponsePaginated[IRoleRead])
+async def get_roles_list(
     params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
 ):
@@ -44,22 +65,6 @@ async def get_role_by_id(
         return create_response(data=role)
     else:
         raise IdNotFoundException(Role, id=role_id)
-
-
-@router.post("", response_model=IPostResponseBase[IRoleRead], status_code=status.HTTP_201_CREATED)
-async def create_role(
-    role: IRoleCreate,
-    current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
-):
-    """
-    Create a new role
-    """
-    role_current = await crud.role.get_role_by_name(name=role.name)
-    if not role_current:
-        new_permission = await crud.role.create(obj_in=role)
-        return create_response(data=new_permission)
-    else:
-        raise NameExistException(Role, name=role_current.name)
 
 
 @router.put("/{role_id}", response_model=IPutResponseBase[IRoleRead])

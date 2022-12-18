@@ -20,7 +20,7 @@ from app.schemas.user_schema import IUserCreate, IUserRead
 from app.utils.token import get_valid_tokens
 
 reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_PREFIX}/auth/access-token",
+    tokenUrl=f"{settings.API_PREFIX}/auth/token",
     scheme_name="JWT",
 )
 

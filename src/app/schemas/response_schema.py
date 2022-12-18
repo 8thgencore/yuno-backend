@@ -1,5 +1,5 @@
 import math
-from typing import Any, Dict, Generic, Optional, Sequence, TypeVar, Union
+from typing import Any, Dict, Generic, Optional, Sequence, TypeVar
 
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage, AbstractParams
@@ -34,7 +34,7 @@ class IResponsePage(AbstractPage[T], Generic[T]):
         items: Sequence[T],
         total: int,
         params: AbstractParams,
-    ) -> Union[PageBase[T], None]:
+    ) -> PageBase[T] | None:
         pages = math.ceil(total / params.size)
         return cls(
             data=PageBase(
@@ -72,8 +72,8 @@ class IDeleteResponseBase(IResponseBase[DataType], Generic[DataType]):
 def create_response(
     data: Optional[DataType],
     message: Optional[str] = "",
-    meta: Optional[Union[Dict, Any]] = {},
-) -> Union[Dict[str, DataType], DataType]:
+    meta: Optional[Dict | Any] = {},
+) -> Dict[str, DataType] | DataType:
     if isinstance(data, IResponsePage):
         data.message = "Data paginated correctly" if not message else message
         data.meta = meta

@@ -21,8 +21,8 @@ class Settings(BaseSettings):
 
     JWT_ALGORITHM: str = "HS256"
 
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
-    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 180
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 30  # 30 days
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 180  # 180 days
     SECRET_KEY: str
 
     # Postgres
@@ -38,25 +38,6 @@ class Settings(BaseSettings):
     REDIS_PORT: str
     REDIS_PASSWORD: str
     REDIS_POOL_SIZE: str
-
-    # Logger
-    LOG_FILE_NAME: str = "log_file_name.log"
-    LOG_ROTATION: time
-    LOG_RETENTION: timedelta
-
-    @validator("LOG_ROTATION", pre=True)
-    def assemble_log_rotation(cls, v: Optional[str]) -> time:
-        if isinstance(v, str):
-            return datetime.strptime(v, "%H:%M").time()
-        else:
-            return datetime.strptime("00:00", "%H:%M").time()
-
-    @validator("LOG_RETENTION", pre=True)
-    def assemble_log_retention(cls, v: Optional[int]) -> timedelta:
-        if isinstance(v, int):
-            return timedelta(days=v)
-        else:
-            return timedelta(days=3)
 
     ASYNC_DB_URI: Optional[str]
 
@@ -88,6 +69,30 @@ class Settings(BaseSettings):
         env_file = os.path.expanduser("~/.env")
 
 
+class LogSettings(BaseSettings):
+    LOG_FILE_NAME: str = "log_file_name.log"
+    LOG_ROTATION: time
+    LOG_RETENTION: timedelta
+
+    @validator("LOG_ROTATION", pre=True)
+    def assemble_log_rotation(cls, v: Optional[str]) -> time:
+        if isinstance(v, str):
+            return datetime.strptime(v, "%H:%M").time()
+        else:
+            return datetime.strptime("00:00", "%H:%M").time()
+
+    @validator("LOG_RETENTION", pre=True)
+    def assemble_log_retention(cls, v: Optional[int]) -> timedelta:
+        if isinstance(v, int):
+            return timedelta(days=v)
+        else:
+            return timedelta(days=3)
+
+    class Config:
+        case_sensitive = True
+        env_file = os.path.expanduser("~/.env")
+
+
 @lru_cache()
 def get_settings() -> BaseSettings:
     logger.info("Loading config settings from the environment...")
@@ -96,10 +101,11 @@ def get_settings() -> BaseSettings:
 
 @lru_cache()
 def load_log_config():
+    log_settings = LogSettings()
     logging.setup(
-        settings.LOG_FILE_NAME,
-        settings.LOG_ROTATION,
-        settings.LOG_RETENTION,
+        log_settings.LOG_FILE_NAME,
+        log_settings.LOG_ROTATION,
+        log_settings.LOG_RETENTION,
     )
 
 

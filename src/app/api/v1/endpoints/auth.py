@@ -41,6 +41,7 @@ async def login(
         raise HTTPException(status_code=400, detail="Email or Password incorrect")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="User is inactive")
+
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(user.id, expires_delta=access_token_expires)
@@ -51,8 +52,9 @@ async def login(
         refresh_token=refresh_token,
         user=user,
     )
+
     valid_access_tokens = await get_valid_tokens(redis_client, user.id, TokenType.ACCESS)
-    if not valid_access_tokens:
+    if valid_access_tokens:
         await add_token_to_redis(
             redis_client,
             user,
@@ -61,7 +63,7 @@ async def login(
             settings.ACCESS_TOKEN_EXPIRE_MINUTES,
         )
     valid_refresh_tokens = await get_valid_tokens(redis_client, user.id, TokenType.REFRESH)
-    if not valid_refresh_tokens:
+    if valid_refresh_tokens:
         await add_token_to_redis(
             redis_client,
             user,
@@ -157,7 +159,7 @@ async def change_password(
     return create_response(data=data, message="New password generated")
 
 
-@router.post("/access-token", response_model=TokenRead)
+@router.post("/token", response_model=TokenRead)
 async def login_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     redis_client: Redis = Depends(get_redis_client),
@@ -170,6 +172,7 @@ async def login_access_token(
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
+
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(user.id, expires_delta=access_token_expires)
     valid_access_tokens = await get_valid_tokens(redis_client, user.id, TokenType.ACCESS)
@@ -192,12 +195,12 @@ async def login_access_token(
     response_model=IPostResponseBase[TokenRead],
     status_code=201,
 )
-async def get_refresh_token(
+async def get_new_access_token(
     body: RefreshToken = Body(...),
     redis_client: Redis = Depends(get_redis_client),
 ) -> Any:
     """
-    Gets a refresh token
+    Gets a new access token using the refresh token for future requests
     """
     try:
         payload = jwt.decode(
@@ -211,7 +214,7 @@ async def get_refresh_token(
     if payload["type"] == "refresh":
         user_id = payload["sub"]
         valid_refresh_tokens = await get_valid_tokens(redis_client, user_id, TokenType.REFRESH)
-        if not valid_refresh_tokens and body.refresh_token not in valid_refresh_tokens:
+        if valid_refresh_tokens and body.refresh_token not in valid_refresh_tokens:
             raise HTTPException(status_code=403, detail="Refresh token invalid")
 
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

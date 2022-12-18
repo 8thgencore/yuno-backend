@@ -10,9 +10,14 @@ from app.models import User
 from app.models.role_model import Role
 from app.models.user_model import UserBase
 from app.schemas.common_schema import IOrderEnum
-from app.schemas.response_schema import (IDeleteResponseBase, IGetResponseBase,
-                                         IGetResponsePaginated, IPostResponseBase, IPutResponseBase,
-                                         create_response)
+from app.schemas.response_schema import (
+    IDeleteResponseBase,
+    IGetResponseBase,
+    IGetResponsePaginated,
+    IPostResponseBase,
+    IPutResponseBase,
+    create_response,
+)
 from app.schemas.role_schema import IRoleEnum
 from app.schemas.user_schema import IUserCreate, IUserRead, IUserReadWithoutProjects, IUserUpdate
 from app.utils.exceptions import IdNotFoundException, UserSelfDeleteException

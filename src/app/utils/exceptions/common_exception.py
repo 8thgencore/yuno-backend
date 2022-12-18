@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generic, Optional, Type, TypeVar, Union
+from typing import Any, Dict, Generic, Optional, Type, TypeVar
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -20,7 +20,7 @@ class IdNotFoundException(HTTPException, Generic[ModelType]):
     def __init__(
         self,
         model: Type[ModelType],
-        id: Optional[Union[UUID, str]] = None,
+        id: Optional[UUID | str] = None,
         headers: Optional[Dict[str, Any]] = None,
     ) -> None:
         if id:
