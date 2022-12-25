@@ -12,9 +12,6 @@ services:
       - ./src:/usr/src
     ports:
       - 8070:8000
-    environment:
-      - ENVIRONMENT=dev
-      - TESTING=0
     env_file:
       - ./src/.env
     depends_on:

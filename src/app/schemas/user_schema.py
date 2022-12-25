@@ -22,12 +22,6 @@ class IUserUpdate(UserBase):
 
 class IUserRead(UserBase):
     id: UUID
-    # projects: Optional[List[IProjectReadBasic]] = []
-    role: Optional[IRoleRead] = None
-
-
-class IUserReadWithoutProjects(UserBase):
-    id: UUID
     role: Optional[IRoleRead] = None
 
 

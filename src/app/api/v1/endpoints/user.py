@@ -19,7 +19,7 @@ from app.schemas.response_schema import (
     create_response,
 )
 from app.schemas.role_schema import IRoleEnum
-from app.schemas.user_schema import IUserCreate, IUserRead, IUserReadWithoutProjects, IUserUpdate
+from app.schemas.user_schema import IUserCreate, IUserRead, IUserUpdate
 from app.utils.exceptions import IdNotFoundException, UserSelfDeleteException
 
 router = APIRouter()
@@ -35,7 +35,7 @@ async def get_my_data(
     return create_response(data=current_user)
 
 
-@router.get("/list", response_model=IGetResponsePaginated[IUserReadWithoutProjects])
+@router.get("/list", response_model=IGetResponsePaginated[IUserRead])
 async def read_users_list(
     params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
@@ -47,7 +47,7 @@ async def read_users_list(
     return create_response(data=users)
 
 
-@router.get("/list/by_created_at", response_model=IGetResponsePaginated[IUserReadWithoutProjects])
+@router.get("/list/by_created_at", response_model=IGetResponsePaginated[IUserRead])
 async def get_user_list_order_by_created_at(
     order: Optional[IOrderEnum] = Query(
         default=IOrderEnum.ascendent, description="It is optional. Default is ascendent"
@@ -106,6 +106,7 @@ async def update_user_by_id(
     Update a user by his/her id
     """
     current_user = await crud.user.get(id=user_id)
+    current_user = await deps.user_exists(user=current_user)
     if not current_user:
         raise IdNotFoundException(User, id=user_id)
     user_updated = await crud.user.update(obj_new=user, obj_current=current_user)

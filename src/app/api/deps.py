@@ -1,9 +1,9 @@
-from typing import AsyncGenerator, List
+from typing import Any, AsyncGenerator, Callable, List
 from uuid import UUID
 
 import aioredis
 from aioredis import Redis
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
@@ -88,20 +88,20 @@ def get_current_user(required_roles: List[str] = None) -> User:
     return current_user
 
 
-async def user_exists(new_user: IUserCreate | IAuthRegister) -> IUserCreate:
-    user = await crud.user.get_by_email(email=new_user.email)
-    if user:
+async def user_exists(user: IUserCreate) -> IUserCreate:
+    is_user = await crud.user.get_by_email(email=user.email)
+    if is_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="There is already a user with same email",
         )
-    user = await crud.user.get_by_username(username=new_user.username)
-    if user:
+    is_user = await crud.user.get_by_username(username=user.username)
+    if is_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="There is already a user with same username",
         )
-    return new_user
+    return user
 
 
 async def is_valid_user(user_id: UUID) -> IUserRead:
@@ -110,3 +110,24 @@ async def is_valid_user(user_id: UUID) -> IUserRead:
         raise HTTPException(status_code=404, detail="User no found")
 
     return
+
+
+def update_schema_name(app: FastAPI, function: Callable, name: str) -> None:
+    """
+    Updates the Pydantic schema name for a FastAPI function that takes
+    in a fastapi.UploadFile = File(...) or bytes = File(...).
+
+    This is a known issue that was reported on FastAPI#1442 in which
+    the schema for file upload routes were auto-generated with no
+    customization options. This renames the auto-generated schema to
+    something more useful and clear.
+
+    Args:
+        app: The FastAPI application to modify.
+        function: The function object to modify.
+        name: The new name of the schema.
+    """
+    for route in app.routes:
+        if route.endpoint is function:
+            route.body_field.type_.__name__ = name
+            break
