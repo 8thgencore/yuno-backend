@@ -106,9 +106,15 @@ async def update_user_by_id(
     Update a user by his/her id
     """
     current_user = await crud.user.get(id=user_id)
-    current_user = await deps.user_exists(user=current_user)
+
     if not current_user:
         raise IdNotFoundException(User, id=user_id)
+
+    if current_user.email != user.email:
+        await deps.email_exists(user=user)
+    if current_user.username != user.username:
+        await deps.username_exists(user=user)
+
     user_updated = await crud.user.update(obj_new=user, obj_current=current_user)
     return create_response(data=user_updated)
 
