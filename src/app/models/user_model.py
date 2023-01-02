@@ -6,6 +6,7 @@ from pydantic import EmailStr
 from sqlmodel import Column, DateTime, Field, Relationship, SQLModel
 
 from app.models.base_uuid_model import BaseUUIDModel
+from app.models.media_model import ImageMedia
 
 
 class UserBase(SQLModel):
@@ -27,3 +28,10 @@ class User(BaseUUIDModel, UserBase, table=True):
     )
     is_active: bool = Field(default=True)
     is_superuser: bool = Field(default=False)
+    image_id: Optional[UUID] = Field(default=None, foreign_key="ImageMedia.id")
+    image: ImageMedia = Relationship(
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            "primaryjoin": "User.image_id==ImageMedia.id",
+        }
+    )

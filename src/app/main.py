@@ -10,7 +10,6 @@ from fastapi_cache.backends.redis import RedisBackend
 from fastapi_pagination import add_pagination
 from loguru import logger
 
-from app.api import ping
 from app.api.deps import get_redis_client
 from app.api.v1.api import api_router as api_router_v1
 from app.core.config import load_log_config, settings
@@ -50,7 +49,6 @@ def create_application() -> FastAPI:
             allow_headers=["*"],
         )
 
-    app.include_router(ping.router)
     app.include_router(api_router_v1, prefix=settings.API_PREFIX)
     add_pagination(app)
 

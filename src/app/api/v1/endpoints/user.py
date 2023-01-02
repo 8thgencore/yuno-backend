@@ -1,7 +1,8 @@
+from io import BytesIO
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Body, Depends, File, Query, Response, UploadFile, status
 from fastapi_pagination import Params
 
 from app import crud
@@ -10,6 +11,7 @@ from app.models import User
 from app.models.role_model import Role
 from app.models.user_model import UserBase
 from app.schemas.common_schema import IOrderEnum
+from app.schemas.media_schema import IMediaCreate
 from app.schemas.response_schema import (
     IDeleteResponseBase,
     IGetResponseBase,
@@ -21,6 +23,8 @@ from app.schemas.response_schema import (
 from app.schemas.role_schema import IRoleEnum
 from app.schemas.user_schema import IUserCreate, IUserRead, IUserUpdate
 from app.utils.exceptions import IdNotFoundException, UserSelfDeleteException
+from app.utils.minio_client import MinioClient
+from app.utils.resize_image import modify_image
 
 router = APIRouter()
 
@@ -132,3 +136,68 @@ async def remove_user(
 
     user = await crud.user.remove(id=user.id)
     return create_response(data=user)
+
+
+@router.post("/image", response_model=IPostResponseBase[IUserRead])
+async def upload_my_image(
+    title: Optional[str] = Body(None),
+    description: Optional[str] = Body(None),
+    image_file: UploadFile = File(...),
+    current_user: User = Depends(deps.get_current_user()),
+    minio_client: MinioClient = Depends(deps.minio_auth),
+):
+    """
+    Uploads a user image
+    """
+    try:
+        image_modified = modify_image(BytesIO(image_file.file.read()))
+        data_file = minio_client.put_object(
+            file_name=image_file.filename,
+            file_data=BytesIO(image_modified.file_data),
+            content_type=image_file.content_type,
+        )
+        media = IMediaCreate(title=title, description=description, path=data_file.file_name)
+        user = await crud.user.update_photo(
+            user=current_user,
+            image=media,
+            heigth=image_modified.height,
+            width=image_modified.width,
+            file_format=image_modified.file_format,
+        )
+        return create_response(data=user)
+    except Exception as e:
+        print(e)
+        return Response("Internal server error", status_code=500)
+
+
+@router.post("/{user_id}/image", response_model=IPostResponseBase[IUserRead])
+async def upload_user_image(
+    user: User = Depends(deps.is_valid_user),
+    title: Optional[str] = Body(None),
+    description: Optional[str] = Body(None),
+    image_file: UploadFile = File(...),
+    current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
+    minio_client: MinioClient = Depends(deps.minio_auth),
+):
+    """
+    Uploads a user image by his/her id
+    """
+    try:
+        image_modified = modify_image(BytesIO(image_file.file.read()))
+        data_file = minio_client.put_object(
+            file_name=image_file.filename,
+            file_data=BytesIO(image_modified.file_data),
+            content_type=image_file.content_type,
+        )
+        media = IMediaCreate(title=title, description=description, path=data_file.file_name)
+        user = await crud.user.update_photo(
+            user=user,
+            image=media,
+            heigth=image_modified.height,
+            width=image_modified.width,
+            file_format=image_modified.file_format,
+        )
+        return create_response(data=user)
+    except Exception as e:
+        print(e)
+        return Response("Internal server error", status_code=500)

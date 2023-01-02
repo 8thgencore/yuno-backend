@@ -1,9 +1,9 @@
-from typing import Any, AsyncGenerator, Callable, List
+from typing import AsyncGenerator, List
 from uuid import UUID
 
 import aioredis
 from aioredis import Redis
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
@@ -14,9 +14,9 @@ from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models.user_model import User
-from app.schemas.auth_schema import IAuthRegister
 from app.schemas.common_schema import IMetaGeneral, TokenType
 from app.schemas.user_schema import IUserCreate, IUserRead
+from app.utils.minio_client import MinioClient
 from app.utils.token import get_valid_tokens
 
 reusable_oauth2 = OAuth2PasswordBearer(
@@ -122,22 +122,11 @@ async def is_valid_user(user_id: UUID) -> IUserRead:
     return
 
 
-def update_schema_name(app: FastAPI, function: Callable, name: str) -> None:
-    """
-    Updates the Pydantic schema name for a FastAPI function that takes
-    in a fastapi.UploadFile = File(...) or bytes = File(...).
-
-    This is a known issue that was reported on FastAPI#1442 in which
-    the schema for file upload routes were auto-generated with no
-    customization options. This renames the auto-generated schema to
-    something more useful and clear.
-
-    Args:
-        app: The FastAPI application to modify.
-        function: The function object to modify.
-        name: The new name of the schema.
-    """
-    for route in app.routes:
-        if route.endpoint is function:
-            route.body_field.type_.__name__ = name
-            break
+def minio_auth() -> MinioClient:
+    minio_client = MinioClient(
+        access_key=settings.MINIO_ROOT_USER,
+        secret_key=settings.MINIO_ROOT_PASSWORD,
+        bucket_name=settings.MINIO_BUCKET,
+        minio_url=settings.MINIO_URL,
+    )
+    return minio_client

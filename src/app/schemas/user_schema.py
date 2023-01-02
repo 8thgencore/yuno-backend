@@ -3,6 +3,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from app.models.user_model import UserBase
+from app.schemas.media_schema import IImageMediaRead
 from app.schemas.role_schema import IRoleRead
 from app.utils.partial import optional
 
@@ -23,6 +24,7 @@ class IUserUpdate(UserBase):
 class IUserRead(UserBase):
     id: UUID
     role: Optional[IRoleRead] = None
+    image: Optional[IImageMediaRead]
 
 
 class IUserStatus(str, Enum):

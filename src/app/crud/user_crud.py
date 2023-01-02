@@ -9,7 +9,9 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.security import get_password_hash, verify_password
 from app.crud.base_crud import CRUDBase
+from app.models.media_model import ImageMedia, Media
 from app.models.user_model import User
+from app.schemas.media_schema import IMediaCreate
 from app.schemas.user_schema import IUserCreate, IUserUpdate
 
 
@@ -69,6 +71,26 @@ class CRUDUser(CRUDBase[User, IUserCreate, IUserUpdate]):
         await db_session.delete(obj)
         await db_session.commit()
         return obj
+
+    async def update_photo(
+        self,
+        *,
+        user: User,
+        image: IMediaCreate,
+        heigth: int,
+        width: int,
+        file_format: str,
+    ) -> User:
+        user.image = ImageMedia(
+            media=Media.from_orm(image),
+            height=heigth,
+            width=width,
+            file_format=file_format,
+        )
+        db.session.add(user)
+        await db.session.commit()
+        await db.session.refresh(user)
+        return user
 
 
 user = CRUDUser(User)

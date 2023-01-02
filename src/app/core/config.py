@@ -33,6 +33,12 @@ class Settings(BaseSettings):
     DB_PORT: int | str
     DB_NAME: str
 
+    # Minio
+    MINIO_ROOT_USER: str
+    MINIO_ROOT_PASSWORD: str
+    MINIO_URL: str
+    MINIO_BUCKET: str
+
     # Redis
     REDIS_HOST: str
     REDIS_PORT: str
@@ -66,7 +72,7 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
-        env_file = os.path.expanduser("~/.env")
+        # env_file = os.path.expanduser("~/.env")
 
 
 class LogSettings(BaseSettings):
@@ -90,7 +96,7 @@ class LogSettings(BaseSettings):
 
     class Config:
         case_sensitive = True
-        env_file = os.path.expanduser("~/.env")
+        # env_file = os.path.expanduser("~/.env")
 
 
 @lru_cache()
