@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
@@ -48,7 +47,6 @@ class CRUDUser(CRUDBase[User, IUserCreate, IUserUpdate]):
         response = None
         for x in db_obj:
             setattr(x, "is_active", obj_in.is_active)
-            setattr(x, "update_at", datetime.utcnow)
             db.session.add(x)
             await db.session.commit()
             await db.session.refresh(x)
