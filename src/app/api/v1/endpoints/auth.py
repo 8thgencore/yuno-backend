@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import Any
 
 from aioredis import Redis
 from fastapi import APIRouter, Body, Depends, HTTPException, status
@@ -12,26 +11,23 @@ from app.api import deps
 from app.core import security
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
-from app.models.role_model import Role
 from app.models.user_model import User
 from app.schemas.auth_schema import IAuthChangePassword, IAuthLogin, IAuthRegister
 from app.schemas.common_schema import IMetaGeneral, TokenType
 from app.schemas.response_schema import IPostResponseBase, create_response
-from app.schemas.role_schema import IRoleEnum
 from app.schemas.token_schema import RefreshToken, Token, TokenRead
 from app.schemas.user_schema import IUserCreate, IUserRead
-from app.utils.exceptions import IdNotFoundException
 from app.utils.token import add_token_to_redis, delete_tokens, get_valid_tokens
 
 router = APIRouter()
 
 
-@router.post("/login", response_model=IPostResponseBase[Token])
+@router.post("/login")
 async def login(
     login_user: IAuthLogin,
     meta_data: IMetaGeneral = Depends(deps.get_general_meta),
     redis_client: Redis = Depends(deps.get_redis_client),
-) -> Any:
+) -> IPostResponseBase[Token]:
     """
     Login for all users
     """
@@ -76,12 +72,11 @@ async def login(
 
 @router.post(
     "/register",
-    response_model=IPostResponseBase[IUserRead],
     status_code=status.HTTP_201_CREATED,
 )
 async def register(
     register_user: IAuthRegister,
-) -> Any:
+) -> IPostResponseBase[IUserRead]:
     """
     Create new user
     """
@@ -106,11 +101,11 @@ async def register(
     return create_response(data=user)
 
 
-@router.post("/token", response_model=TokenRead)
+@router.post("/token")
 async def login_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     redis_client: Redis = Depends(deps.get_redis_client),
-) -> Any:
+) -> TokenRead:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
@@ -137,15 +132,11 @@ async def login_access_token(
     }
 
 
-@router.post(
-    "/refresh-token",
-    response_model=IPostResponseBase[TokenRead],
-    status_code=201,
-)
+@router.post("/refresh-token", status_code=201)
 async def get_new_access_token(
     body: RefreshToken = Body(...),
     redis_client: Redis = Depends(deps.get_redis_client),
-) -> Any:
+) -> IPostResponseBase[TokenRead]:
     """
     Gets a new access token using the refresh token for future requests
     """
@@ -167,7 +158,9 @@ async def get_new_access_token(
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         user = await crud.user.get(id=user_id)
         if user.is_active:
-            access_token = security.create_access_token(user.id, expires_delta=access_token_expires)
+            access_token = security.create_access_token(
+                user.id, expires_delta=access_token_expires
+            )
             valid_access_tokens = await get_valid_tokens(redis_client, user.id, TokenType.ACCESS)
             if valid_access_tokens:
                 await add_token_to_redis(
@@ -187,12 +180,12 @@ async def get_new_access_token(
         raise HTTPException(status_code=404, detail="Incorrect token")
 
 
-@router.post("/change-password", response_model=IPostResponseBase[Token])
+@router.post("/change-password")
 async def change_password(
     password: IAuthChangePassword,
     current_user: User = Depends(deps.get_current_user()),
     redis_client: Redis = Depends(deps.get_redis_client),
-) -> Any:
+) -> IPostResponseBase[Token]:
     """
     Change password
     """
@@ -212,7 +205,9 @@ async def change_password(
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
-    access_token = security.create_access_token(current_user.id, expires_delta=access_token_expires)
+    access_token = security.create_access_token(
+        current_user.id, expires_delta=access_token_expires
+    )
     refresh_token = security.create_refresh_token(
         current_user.id, expires_delta=refresh_token_expires
     )

@@ -1,50 +1,29 @@
 # Example configuration for Black.
 
 [tool.black]
-line-length = 100
-target-version = ['py38']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # The following are specific to Black, you probably don't want those.
-  | blib2to3
-  | tests/data
-  | profiling
-)/
-'''
-# We use preview style for formatting Black itself. If you
-# want stable formatting across releases, you should keep
-# this off.
-preview = true
+line-length = 99
+target-version = [ "py37", "py38", "py39", "py310"]
+exclude = "((.eggs | .git | .pytest_cache | build | dist))"
 
 
-[tool.isort]
-line_length = 100
-
-# Build system information below.
-# NOTE: You don't need this in your own Black configuration.
-
-[build-system]
-requires = ["setuptools>=45.0", "setuptools_scm[toml]>=6.3.1", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.pytest.ini_options]
-# Option below requires `tests/optional.py`
-addopts = "--strict-config --strict-markers"
-optional-tests = [
-  "no_blackd: run when `d` extra NOT installed",
-  "no_jupyter: run when `jupyter` extra NOT installed",
+[tool.ruff]
+line-length = 99
+exclude = [".git", "__pycache__", ".mypy_cache", ".pytest_cache"]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
 ]
-markers = [
-  "incompatible_with_mypyc: run when testing mypyc compiled black"
+ignore = [    
+    "B904",
+    "B006",    
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
 ]
-xfail_strict = true
-filterwarnings = [
-    "error",
-    # this is mitigated by a try/catch in https://github.com/psf/black/pull/2974/
-    # this ignore can be removed when support for aiohttp 3.7 is dropped.
-    '''ignore:Decorator `@unittest_run_loop` is no longer needed in aiohttp 3\.8\+:DeprecationWarning''',
-    # this is mitigated by https://github.com/python/cpython/issues/79071 in python 3.8+
-    # this ignore can be removed when support for 3.7 is dropped.
-    '''ignore:Bare functions are deprecated, use async ones:DeprecationWarning''',
-]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]

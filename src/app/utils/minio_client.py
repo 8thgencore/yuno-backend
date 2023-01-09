@@ -60,7 +60,9 @@ class MinioClient:
                 part_size=10 * 1024 * 1024,
             )
             url = self.presigned_get_object(bucket_name=self.bucket_name, object_name=object_name)
-            data_file = IMinioResponse(bucket_name=self.bucket_name, file_name=object_name, url=url)
+            data_file = IMinioResponse(
+                bucket_name=self.bucket_name, file_name=object_name, url=url
+            )
             return data_file
         except Exception as e:
-            raise Exception(e)
+            raise e

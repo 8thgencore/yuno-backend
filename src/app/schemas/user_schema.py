@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
 from app.models.user_model import UserBase

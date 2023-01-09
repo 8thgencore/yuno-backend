@@ -144,4 +144,4 @@ cython_debug/
 .python-version
 
 # minio
-.minio/
+minio/
