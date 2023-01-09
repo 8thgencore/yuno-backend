@@ -1,5 +1,4 @@
 from typing import Any, Dict, List, Optional
-from uuid import UUID
 
 from fastapi_async_sqlalchemy import db
 from pydantic.networks import EmailStr
@@ -60,15 +59,6 @@ class CRUDUser(CRUDBase[User, IUserCreate, IUserUpdate]):
         if not verify_password(password, user.hashed_password):
             return None
         return user
-
-    async def remove(self, *, id: UUID | str, db_session: Optional[AsyncSession] = None) -> User:
-        db_session = db_session or db.session
-        response = await db_session.execute(select(self.model).where(self.model.id == id))
-        obj = response.scalar_one()
-
-        await db_session.delete(obj)
-        await db_session.commit()
-        return obj
 
     async def update_photo(
         self,
