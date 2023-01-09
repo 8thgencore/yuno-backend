@@ -70,10 +70,7 @@ async def login(
     return create_response(meta=meta_data, data=data, message="Login correctly")
 
 
-@router.post(
-    "/register",
-    status_code=status.HTTP_201_CREATED,
-)
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(
     register_user: IAuthRegister,
 ) -> IPostResponseBase[IUserRead]:
