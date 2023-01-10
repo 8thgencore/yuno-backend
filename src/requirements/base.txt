@@ -1,4 +1,4 @@
-fastapi==0.89.0
+fastapi==0.89.1
 uvicorn[standard]==0.20.0
 
 # db
@@ -8,13 +8,12 @@ alembic==1.9.1
 pydantic[email]==1.10.4
 sqlalchemy-utils==0.39.0
 fastapi-async-sqlalchemy==0.3.12
-fastapi-pagination==0.11.1
+fastapi-pagination==0.11.2
 aioredis==2.0.1
 fastapi-cache2[redis]==0.1.9
 
 # utils
 loguru==0.6.0
-orjson==3.8.4
 
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4

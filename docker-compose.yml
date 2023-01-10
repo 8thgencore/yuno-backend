@@ -33,8 +33,10 @@ services:
     container_name: ${REDIS_CONTAINER_NAME:-yuno-redis-container}
     image: "redis:alpine"
     restart: unless-stopped
-    expose: 
-      - 6379
+    ports:
+      - 6379:6379
+    # expose: 
+    #   - 6379
     environment:
       - REDIS_MASTER_HOST=${REDIS_HOST:-redis-server}
       - REDIS_MASTER_PORT_NUMBER=${REDIS_PORT:-6379}
