@@ -1,4 +1,4 @@
-import math
+from math import ceil
 from typing import Any, Dict, Generic, Optional, Sequence, TypeVar
 
 from fastapi_pagination import Page, Params
@@ -35,7 +35,11 @@ class IResponsePage(AbstractPage[T], Generic[T]):
         total: int,
         params: AbstractParams,
     ) -> PageBase[T] | None:
-        pages = math.ceil(total / params.size)
+        if params.size is not None and total is not None and params.size != 0:
+            pages = ceil(total / params.size)
+        else:
+            pages = 0
+
         return cls(
             data=PageBase(
                 items=items,
