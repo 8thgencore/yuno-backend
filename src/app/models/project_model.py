@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.models.base_uuid_model import BaseUUIDModel
-from app.models.project_user_model import ProjectUserLink
+from app.models.links_model import ProjectUserLink
 
 
 class ProjectBase(SQLModel):
@@ -17,7 +17,8 @@ class Project(BaseUUIDModel, ProjectBase, table=True):
     created_by_id: Optional[UUID] = Field(default=None, foreign_key="User.id")
     # created_by_id: Optional[UUID] = Field(default=None)
 
-    user_links: List[ProjectUserLink] = Relationship(
-        back_populates="project",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+    users: List["User"] = Relationship(  # noqa: F821
+        back_populates="projects",
+        link_model=ProjectUserLink,
+        sa_relationship_kwargs={"lazy": "selectin"},
     )

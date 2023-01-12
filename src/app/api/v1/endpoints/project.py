@@ -6,7 +6,12 @@ from fastapi_pagination import Params
 from app import crud
 from app.api import deps
 from app.models import Project, User
-from app.schemas.project_schema import IProjectCreate, IProjectRead, IProjectUpdate
+from app.schemas.project_schema import (
+    IProjectCreate,
+    IProjectRead,
+    IProjectUpdate,
+    IProjectWithUsers,
+)
 from app.schemas.response_schema import (
     IDeleteResponseBase,
     IGetResponseBase,
@@ -35,7 +40,7 @@ async def read_project_list(
 async def get_project_by_id(
     project_id: UUID,
     current_user: User = Depends(deps.get_current_user()),
-) -> IGetResponseBase[IProjectRead]:
+) -> IGetResponseBase[IProjectWithUsers]:
     """
     Gets a project by id
     """

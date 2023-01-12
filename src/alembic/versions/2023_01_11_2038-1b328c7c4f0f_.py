@@ -37,7 +37,8 @@ def downgrade() -> None:
         sa.Column("created_at", postgresql.TIMESTAMP(), autoincrement=False, nullable=True),
     )
     op.add_column(
-        "ProjectUsers", sa.Column("id", postgresql.UUID(), autoincrement=False, nullable=False)
+        "ProjectUsers",
+        sa.Column("id", postgresql.UUID(), autoincrement=False, nullable=False),
     )
     op.create_index("ix_ProjectUsers_id", "ProjectUsers", ["id"], unique=False)
     # ### end Alembic commands ###

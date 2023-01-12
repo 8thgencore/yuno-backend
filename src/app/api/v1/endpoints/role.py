@@ -15,7 +15,11 @@ from app.schemas.response_schema import (
     create_response,
 )
 from app.schemas.role_schema import IRoleCreate, IRoleEnum, IRoleRead, IRoleUpdate
-from app.utils.exceptions import ContentNoChangeException, IdNotFoundException, NameExistException
+from app.utils.exceptions import (
+    ContentNoChangeException,
+    IdNotFoundException,
+    NameExistException,
+)
 
 router = APIRouter()
 

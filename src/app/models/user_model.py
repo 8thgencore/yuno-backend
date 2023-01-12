@@ -6,8 +6,8 @@ from pydantic import EmailStr
 from sqlmodel import Column, DateTime, Field, Relationship, SQLModel
 
 from app.models.base_uuid_model import BaseUUIDModel
+from app.models.links_model import ProjectUserLink
 from app.models.media_model import ImageMedia
-from app.models.project_user_model import ProjectUserLink
 
 
 class UserBase(SQLModel):
@@ -38,7 +38,8 @@ class User(BaseUUIDModel, UserBase, table=True):
         }
     )
 
-    project_links: List[ProjectUserLink] = Relationship(
-        back_populates="user",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+    projects: List["Project"] = Relationship(  # noqa: F821
+        back_populates="users",
+        link_model=ProjectUserLink,
+        sa_relationship_kwargs={"lazy": "selectin"},
     )
