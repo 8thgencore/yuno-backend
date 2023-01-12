@@ -4,7 +4,7 @@ from fastapi_async_sqlalchemy import db
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.crud.base_crud import CRUDBase
-from app.models import Project
+from app.models import Project, ProjectUserLink
 from app.models.user_model import User
 from app.schemas.project_schema import IProjectCreate, IProjectUpdate
 
@@ -17,8 +17,13 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
 
         db_obj = Project.from_orm(obj_in)
         db_obj.created_by_id = user.id
+        project_user_link = ProjectUserLink(
+            user_id=user.id,
+            project_id=db_obj.id,
+        )
 
         db_session.add(db_obj)
+        db_session.add(project_user_link)
         await db_session.commit()
         await db_session.refresh(db_obj)
         return db_obj

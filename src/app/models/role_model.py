@@ -12,5 +12,6 @@ class RoleBase(SQLModel):
 
 class Role(BaseUUIDModel, RoleBase, table=True):
     users: List["User"] = Relationship(  # noqa: F821
-        back_populates="role", sa_relationship_kwargs={"lazy": "selectin"}
+        back_populates="role",
+        sa_relationship_kwargs={"lazy": "selectin"},
     )

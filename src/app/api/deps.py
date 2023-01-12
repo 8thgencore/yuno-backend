@@ -80,7 +80,7 @@ def get_current_user(required_roles: List[str] = None) -> User:
             if not is_valid_role:
                 raise HTTPException(
                     status_code=403,
-                    detail=f"""Role "{required_roles}" is required for this action""",
+                    detail=f"""Role '{required_roles}' is required for this action""",
                 )
 
         return user

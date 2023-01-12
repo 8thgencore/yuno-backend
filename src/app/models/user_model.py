@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import EmailStr
@@ -7,6 +7,7 @@ from sqlmodel import Column, DateTime, Field, Relationship, SQLModel
 
 from app.models.base_uuid_model import BaseUUIDModel
 from app.models.media_model import ImageMedia
+from app.models.project_user_model import ProjectUserLink
 
 
 class UserBase(SQLModel):
@@ -24,7 +25,8 @@ class UserBase(SQLModel):
 class User(BaseUUIDModel, UserBase, table=True):
     hashed_password: Optional[str] = Field(nullable=False, index=True)
     role: Optional["Role"] = Relationship(  # noqa: F821
-        back_populates="users", sa_relationship_kwargs={"lazy": "selectin"}
+        back_populates="users",
+        sa_relationship_kwargs={"lazy": "selectin"},
     )
     is_active: bool = Field(default=True)
     is_superuser: bool = Field(default=False)
@@ -34,4 +36,9 @@ class User(BaseUUIDModel, UserBase, table=True):
             "lazy": "selectin",
             "primaryjoin": "User.image_id==ImageMedia.id",
         }
+    )
+
+    project_links: List[ProjectUserLink] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"cascade": "all, delete"},
     )

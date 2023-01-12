@@ -184,6 +184,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db_session = db_session or db.session
         response = await db_session.execute(select(self.model).where(self.model.id == id))
         obj = response.scalar_one()
+
         await db_session.delete(obj)
         await db_session.commit()
         return obj

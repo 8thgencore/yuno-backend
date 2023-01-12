@@ -25,7 +25,7 @@ async def read_project_list(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IProjectRead]:
     """
-    Retrieve project. // TODO: only users projects
+    Gets a projects list
     """
     projects = await crud.project.get_multi_paginated(params=params)
     return create_response(data=projects)
