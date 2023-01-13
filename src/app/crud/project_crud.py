@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi_async_sqlalchemy import db
 from sqlmodel import and_, select
@@ -7,7 +7,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.crud.base_crud import CRUDBase
 from app.models import Project, ProjectUserLink
 from app.models.user_model import User
-from app.schemas.project_schema import IProjectCreate, IProjectUpdate
+from app.schemas.project_schema import IProjectCreate, IProjectRead, IProjectUpdate
 
 
 class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
@@ -30,6 +30,14 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
 
         await db_session.refresh(db_obj)
         return db_obj
+
+    async def get_by_user(
+        self, *, user: User, db_session: Optional[AsyncSession] = None
+    ) -> List[IProjectRead]:
+        db_session = db_session or db.session
+        query = select(Project).where(Project.users.contains(user))
+        projects = await super().get_multi_paginated(query=query)
+        return projects
 
     async def join_the_project(
         self, *, user: User, project: Project, db_session: Optional[AsyncSession] = None
@@ -57,7 +65,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
                 )
             )
         )
-        obj = response.scalar_one()
+        obj = response.scalar_one_or_none()
         if obj:
             await db_session.delete(obj)
         await db.session.refresh(project)

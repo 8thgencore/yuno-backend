@@ -25,6 +25,17 @@ from app.utils.exceptions.project_exception import UserAlredyMemberProject
 router = APIRouter()
 
 
+@router.get("/my")
+async def get_my_projects(
+    current_user: User = Depends(deps.get_current_user()),
+) -> IGetResponsePaginated[IProjectRead]:
+    """
+    Get my projects
+    """
+    projects = await crud.project.get_by_user(user=current_user)
+    return create_response(data=projects)
+
+
 @router.get("/list")
 async def read_project_list(
     params: Params = Depends(),
