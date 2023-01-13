@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi_async_sqlalchemy import db
+from sqlmodel import and_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.crud.base_crud import CRUDBase
@@ -29,6 +30,39 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
 
         await db_session.refresh(db_obj)
         return db_obj
+
+    async def join_the_project(
+        self, *, user: User, project: Project, db_session: Optional[AsyncSession] = None
+    ) -> Project:
+        db_session = db_session or db.session
+        project_user_link = ProjectUserLink(
+            user_id=user.id,
+            project_id=project.id,
+        )
+        db_session.add(project_user_link)
+        await db_session.commit()
+        await db.session.refresh(project)
+        return project
+
+    async def leave_the_project(
+        self, *, user: User, project: Project, db_session: Optional[AsyncSession] = None
+    ) -> Project:
+        db_session = db_session or db.session
+
+        response = await db_session.execute(
+            select(ProjectUserLink).where(
+                and_(
+                    ProjectUserLink.user_id == user.id,
+                    ProjectUserLink.project_id == project.id,
+                )
+            )
+        )
+        obj = response.scalar_one()
+        if obj:
+            await db_session.delete(obj)
+        await db.session.refresh(project)
+        await db_session.commit()
+        return project
 
 
 project = CRUDProject(Project)
