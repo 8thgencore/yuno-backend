@@ -13,3 +13,15 @@ class UserNotCreatorProject(HTTPException):
             detail="The user is not the creator this project",
             headers=headers,
         )
+
+
+class UserNotMemberProject(HTTPException):
+    def __init__(
+        self,
+        headers: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user is not a member of this project",
+            headers=headers,
+        )

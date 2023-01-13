@@ -19,7 +19,7 @@ from app.schemas.response_schema import (
     IPostResponseBase,
     create_response,
 )
-from app.utils.exceptions import IdNotFoundException, UserNotCreatorProject
+from app.utils.exceptions import IdNotFoundException, UserNotCreatorProject, UserNotMemberProject
 
 router = APIRouter()
 
@@ -63,6 +63,9 @@ async def update_project_by_id(
     if not current_project:
         raise IdNotFoundException(Project, id=project_id)
 
+    if current_user not in current_project.users:
+        raise UserNotMemberProject()
+
     project_updated = await crud.project.update(obj_new=project, obj_current=current_project)
     return create_response(data=project_updated)
 
@@ -87,7 +90,7 @@ async def remove_project_by_id(
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-async def create_user(
+async def create_project(
     new_project: IProjectCreate,
     current_user: User = Depends(deps.get_current_user()),
 ) -> IPostResponseBase[IProjectRead]:

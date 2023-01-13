@@ -17,14 +17,16 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
 
         db_obj = Project.from_orm(obj_in)
         db_obj.created_by_id = user.id
+        db_session.add(db_obj)
+        await db_session.commit()
+
         project_user_link = ProjectUserLink(
             user_id=user.id,
             project_id=db_obj.id,
         )
-
-        db_session.add(db_obj)
         db_session.add(project_user_link)
         await db_session.commit()
+
         await db_session.refresh(db_obj)
         return db_obj
 
