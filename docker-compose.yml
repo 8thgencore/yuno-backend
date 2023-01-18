@@ -38,9 +38,8 @@ services:
     # expose: 
     #   - 6379
     environment:
-      - REDIS_MASTER_HOST=${REDIS_HOST:-redis-server}
-      - REDIS_MASTER_PORT_NUMBER=${REDIS_PORT:-6379}
-      - REDIS_MASTER_PASSWORD=${REDIS_PASSWORD:-my_master_password}
+      - ALLOW_EMPTY_PASSWORD=no
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-str0ng_passw0rd}
 
   pgadmin:
     container_name: ${PGADMIN_CONTAINER_NAME:-yuno-pgadmin-container}

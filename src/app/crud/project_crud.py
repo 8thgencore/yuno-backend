@@ -1,13 +1,18 @@
 from typing import List, Optional
 
 from fastapi_async_sqlalchemy import db
+from sqlalchemy.orm import selectinload
 from sqlmodel import and_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.crud.base_crud import CRUDBase
 from app.models import Project, ProjectUserLink
 from app.models.user_model import User
-from app.schemas.project_schema import IProjectCreate, IProjectRead, IProjectUpdate
+from app.schemas.project_schema import (
+    IProjectCreate,
+    IProjectUpdate,
+    IProjectWithUsers,
+)
 
 
 class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
@@ -33,9 +38,9 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
 
     async def get_by_user(
         self, *, user: User, db_session: Optional[AsyncSession] = None
-    ) -> List[IProjectRead]:
+    ) -> List[IProjectWithUsers]:
         db_session = db_session or db.session
-        query = select(Project).where(Project.users.contains(user))
+        query = select(Project).where(Project.users.contains(user)).options(selectinload(Project.users))
         projects = await super().get_multi_paginated(query=query)
         return projects
 
