@@ -40,7 +40,11 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         self, *, user: User, db_session: Optional[AsyncSession] = None
     ) -> List[IProjectWithUsers]:
         db_session = db_session or db.session
-        query = select(Project).where(Project.users.contains(user)).options(selectinload(Project.users))
+        query = (
+            select(Project)
+            .where(Project.users.contains(user))
+            .options(selectinload(Project.users))
+        )
         projects = await super().get_multi_paginated(query=query)
         return projects
 

@@ -22,3 +22,7 @@ class Project(BaseUUIDModel, ProjectBase, table=True):
         link_model=ProjectUserLink,
         sa_relationship_kwargs={"lazy": "selectin"},
     )
+    tasks: List["Task"] = Relationship(  # noqa: F821
+        back_populates="project",
+        sa_relationship_kwargs={"lazy": "selectin"},
+    )
