@@ -32,14 +32,23 @@ services:
   redis-server:
     container_name: ${REDIS_CONTAINER_NAME:-yuno-redis-container}
     image: "redis:alpine"
+    command:
+      - /bin/sh
+      - -c
+      # - Double dollars, so that the variable is not expanded by Docker Compose
+      # - Surround by quotes, so that the shell does not split the password
+      # - The ${variable:?message} syntax causes shell to exit with a non-zero
+      #   code and print a message, when the variable is not set or empty
+      - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
     restart: unless-stopped
     ports:
       - 6379:6379
     # expose: 
     #   - 6379
+    env_file:
+      - .env
     environment:
       - ALLOW_EMPTY_PASSWORD=no
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-str0ng_passw0rd}
 
   pgadmin:
     container_name: ${PGADMIN_CONTAINER_NAME:-yuno-pgadmin-container}
