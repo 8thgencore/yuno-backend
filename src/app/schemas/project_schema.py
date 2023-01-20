@@ -23,4 +23,5 @@ class IProjectRead(ProjectBase):
 
 class IProjectWithUsers(ProjectBase):
     id: UUID
+    tasks: Optional[List[ITaskRead]] = []
     users: Optional[List[IUserRead]] = []

@@ -6,12 +6,14 @@ from sqlmodel import and_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.crud.base_crud import CRUDBase
-from app.models import Project, ProjectUserLink
-from app.models.user_model import User
+from app.models import Project, ProjectUserLink, Task, User
 from app.schemas.project_schema import (
     IProjectCreate,
     IProjectUpdate,
     IProjectWithUsers,
+)
+from app.schemas.task_schema import (
+    ITaskRead,
 )
 
 
@@ -48,6 +50,21 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         projects = await super().get_multi_paginated(query=query)
         return projects
 
+    async def is_member_project(
+        self, *, user_id: str, project_id: str, db_session: Optional[AsyncSession] = None
+    ) -> bool:
+        db_session = db_session or db.session
+        query = select(ProjectUserLink).where(
+            and_(
+                ProjectUserLink.user_id == user_id,
+                ProjectUserLink.project_id == project_id,
+            )
+        )
+        response = await db_session.execute(query)
+        obj = response.scalar_one_or_none()
+
+        return True if obj else False
+
     async def join_the_project(
         self, *, user: User, project: Project, db_session: Optional[AsyncSession] = None
     ) -> Project:
@@ -80,6 +97,15 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         await db.session.refresh(project)
         await db_session.commit()
         return project
+
+    async def get_tasks(
+        self, *, project_id: str, db_session: Optional[AsyncSession] = None
+    ) -> List[ITaskRead]:
+        db_session = db_session or db.session
+
+        query = select(Task).where(Task.project_id == project_id)
+        tasks = await super().get_multi_paginated(query=query)
+        return tasks
 
 
 project = CRUDProject(Project)

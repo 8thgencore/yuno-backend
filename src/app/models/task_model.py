@@ -9,8 +9,8 @@ from app.models.base_uuid_model import BaseUUIDModel
 
 class TaskBase(SQLModel):
     name: str
-    done: bool
-    deadline: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    done: bool = Field(default=False)
+    deadline: Optional[datetime]
     project_id: Optional[UUID] = Field(default=None, foreign_key="Project.id")
 
 

@@ -19,6 +19,7 @@ from app.schemas.response_schema import (
     IPostResponseBase,
     create_response,
 )
+from app.schemas.task_schema import ITaskRead
 from app.utils.exceptions import (
     IdNotFoundException,
     UserNotCreatorProject,
@@ -153,3 +154,19 @@ async def leave_to_project_by_id(
 
     project = await crud.project.leave_the_project(user=current_user, project=current_project)
     return create_response(data=project)
+
+
+@router.get("/{project_id}/tasks")
+async def tasks_list_project_by_id(
+    project_id: UUID,
+    current_user: User = Depends(deps.get_current_user()),
+) -> IGetResponsePaginated[ITaskRead]:
+    """
+    Get tasks list by project id
+    """
+    current_project = await crud.project.get(id=project_id)
+    if not current_project:
+        raise IdNotFoundException(Project, id=project_id)
+
+    tasks = await crud.project.get_tasks(project_id=project_id)
+    return create_response(data=tasks)
