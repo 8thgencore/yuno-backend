@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
+from pydantic.datetime_parse import parse_datetime
 from sqlalchemy.orm import declared_attr
 from sqlmodel import Field
 from sqlmodel import SQLModel as _SQLModel
@@ -28,3 +29,15 @@ class BaseUUIDModel(SQLModel):
         sa_column_kwargs={"onupdate": datetime.utcnow},
     )
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+
+
+class UTCDatetime(datetime):
+    """parse a datetime and convert in into UTC format"""
+
+    @classmethod
+    def __get_validators__(cls) -> Any:
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v: Any) -> datetime:
+        return datetime.fromtimestamp(parse_datetime(v).timestamp())

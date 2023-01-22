@@ -13,11 +13,7 @@ from app.schemas.response_schema import (
     IPostResponseBase,
     create_response,
 )
-from app.schemas.task_schema import (
-    ITaskCreate,
-    ITaskRead,
-    ITaskUpdate,
-)
+from app.schemas.task_schema import ITaskCreate, ITaskRead, ITaskUpdate
 from app.utils.exceptions import (
     IdNotFoundException,
     UserNotMemberProject,
@@ -32,10 +28,9 @@ async def read_my_tasks_list(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[ITaskRead]:
     """
-    Get a list of my tasks
+    Get a list of my tasks with project name
     """
     tasks = await crud.task.get_by_user(user=current_user)
-    print(tasks)
     return create_response(data=tasks)
 
 
@@ -47,7 +42,7 @@ async def create_task(
     """
     Creates a new task
     """
-    check_user_member_project(user_id=current_user.id, project_id=new_task.project_id)
+    await check_user_member_project(user_id=current_user.id, project_id=new_task.project_id)
 
     task = await crud.task.create(obj_in=new_task, user=current_user)
     return create_response(data=task)
@@ -80,7 +75,8 @@ async def update_task_by_id(
     if not current_task:
         raise IdNotFoundException(Task, id=task_id)
 
-    check_user_member_project(user_id=current_user.id, project_id=current_task.project_id)
+    task.project_id = current_task.project_id if task.project_id is None else task.project_id
+    await check_user_member_project(user_id=current_user.id, project_id=task.project_id)
 
     task_updated = await crud.task.update(obj_new=task, obj_current=current_task)
     return create_response(data=task_updated)
@@ -98,7 +94,7 @@ async def remove_task_by_id(
     if not current_task:
         raise IdNotFoundException(Task, id=task_id)
 
-    check_user_member_project(user_id=current_user.id, project_id=current_task.project_id)
+    await check_user_member_project(user_id=current_user.id, project_id=current_task.project_id)
 
     task = await crud.task.remove(id=task_id)
     return create_response(data=task)

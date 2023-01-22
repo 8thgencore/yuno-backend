@@ -11,6 +11,7 @@ from app.schemas.project_schema import (
     IProjectRead,
     IProjectUpdate,
     IProjectWithUsers,
+    IProjectWithUsersTasks,
 )
 from app.schemas.response_schema import (
     IDeleteResponseBase,
@@ -69,7 +70,7 @@ async def create_project(
 async def get_project_by_id(
     project_id: UUID,
     current_user: User = Depends(deps.get_current_user()),
-) -> IGetResponseBase[IProjectWithUsers]:
+) -> IGetResponseBase[IProjectWithUsersTasks]:
     """
     Gets a project by id
     """

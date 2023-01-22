@@ -34,6 +34,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
         projects = response.scalars().all()
 
         # get user tasks
+        # query = select(Task, Project.name.label('project_name')).where(Task.project_id.in_(projects))
         query = select(Task).where(Task.project_id.in_(projects))
         tasks = await super().get_multi_paginated(query=query)
 

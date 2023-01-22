@@ -15,3 +15,8 @@ class ITaskUpdate(TaskBase):
 
 class ITaskRead(TaskBase):
     id: UUID
+
+
+class ITaskWithProjectName(TaskBase):
+    id: UUID
+    project_name: str

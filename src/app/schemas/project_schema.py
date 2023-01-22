@@ -18,10 +18,14 @@ class IProjectUpdate(ProjectBase):
 
 class IProjectRead(ProjectBase):
     id: UUID
-    tasks: Optional[List[ITaskRead]] = []
 
 
 class IProjectWithUsers(ProjectBase):
+    id: UUID
+    users: Optional[List[IUserRead]] = []
+
+
+class IProjectWithUsersTasks(ProjectBase):
     id: UUID
     tasks: Optional[List[ITaskRead]] = []
     users: Optional[List[IUserRead]] = []
