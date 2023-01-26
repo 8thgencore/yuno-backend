@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from fastapi_async_sqlalchemy import db
-from sqlmodel import select
+from sqlmodel import and_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.crud.base_crud import CRUDBase
@@ -34,8 +34,24 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
         projects = response.scalars().all()
 
         # get user tasks
-        # query = select(Task, Project.name.label('project_name')).where(Task.project_id.in_(projects))
         query = select(Task).where(Task.project_id.in_(projects))
+        tasks = await super().get_multi_paginated(query=query)
+
+        return tasks
+
+    async def get_not_done_by_user(
+        self, *, user: User, db_session: Optional[AsyncSession] = None
+    ) -> List[ITaskRead]:
+        db_session = db_session or db.session
+
+        # get user projects
+        query = select(Project.id).where(Project.users.contains(user))
+        response = await db_session.execute(query)
+        projects = response.scalars().all()
+
+        # get user tasks
+        # query = select(Task, Project.name.label('project_name')).where(Task.project_id.in_(projects))
+        query = select(Task).where(and_(Task.project_id.in_(projects), Task.done is False))
         tasks = await super().get_multi_paginated(query=query)
 
         return tasks

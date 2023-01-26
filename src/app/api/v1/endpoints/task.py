@@ -23,14 +23,26 @@ router = APIRouter()
 
 
 @router.get("/list")
-async def read_my_tasks_list(
+async def get_my_tasks_list(
     params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[ITaskRead]:
     """
-    Get a list of my tasks with project name
+    Get a list of my tasks
     """
     tasks = await crud.task.get_by_user(user=current_user)
+    return create_response(data=tasks)
+
+
+@router.get("/not_done")
+async def get_my_not_done_tasks_list(
+    params: Params = Depends(),
+    current_user: User = Depends(deps.get_current_user()),
+) -> IGetResponsePaginated[ITaskRead]:
+    """
+    Get a list of my not complited tasks with project name
+    """
+    tasks = await crud.task.get_not_done_by_user(user=current_user)
     return create_response(data=tasks)
 
 
