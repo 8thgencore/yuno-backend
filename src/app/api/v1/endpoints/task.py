@@ -42,7 +42,8 @@ async def create_task(
     """
     Creates a new task
     """
-    await check_user_member_project(user_id=current_user.id, project_id=new_task.project_id)
+    if new_task.project_id:
+        await check_user_member_project(user_id=current_user.id, project_id=new_task.project_id)
 
     task = await crud.task.create(obj_in=new_task, user=current_user)
     return create_response(data=task)
@@ -75,8 +76,10 @@ async def update_task_by_id(
     if not current_task:
         raise IdNotFoundException(Task, id=task_id)
 
-    task.project_id = current_task.project_id if task.project_id is None else task.project_id
-    await check_user_member_project(user_id=current_user.id, project_id=task.project_id)
+    if current_task.project_id:
+        await check_user_member_project(
+            user_id=current_user.id, project_id=current_task.project_id
+        )
 
     task_updated = await crud.task.update(obj_new=task, obj_current=current_task)
     return create_response(data=task_updated)

@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Optional
 from uuid import UUID
 
 from pydantic import validator
@@ -21,7 +21,7 @@ class IMediaUpdate(MediaBase):
 
 
 class IMediaRead(MediaBase):
-    id: Union[UUID, str]
+    id: UUID | str
     link: Optional[str] = None
 
     @validator(

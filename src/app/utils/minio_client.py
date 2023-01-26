@@ -50,7 +50,8 @@ class MinioClient:
 
     def put_object(self, file_data, file_name, content_type):
         try:
-            object_name = f"{uuid7()}{file_name}"
+            # object_name = f"{uuid7()}{file_name}"
+            object_name = f"{uuid7()}.{file_name.split('.')[-1]}"
             self.client.put_object(
                 bucket_name=self.bucket_name,
                 object_name=object_name,

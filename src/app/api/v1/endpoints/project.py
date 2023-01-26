@@ -46,7 +46,7 @@ async def get_my_projects(
 async def read_project_list(
     params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
-) -> IGetResponsePaginated[IProjectRead]:
+) -> IGetResponsePaginated[IProjectWithUsers]:
     """
     Gets a projects list
     """
