@@ -50,6 +50,23 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         projects = await super().get_multi_paginated(query=query)
         return projects
 
+    async def remove(self, *, id: str, db_session: Optional[AsyncSession] = None) -> Project:
+        db_session = db_session or db.session
+
+        response = await db.session.execute(
+            select(ProjectUserLink).where(ProjectUserLink.project_id == id)
+        )
+        obj = response.scalars().all()
+        for ob in obj:
+            await db_session.delete(ob)
+
+        response = await db.session.execute(select(Project).where(Project.id == id))
+        obj = response.scalar_one()
+        await db_session.delete(obj)
+
+        await db_session.commit()
+        return obj
+
     async def is_member_project(
         self, *, user_id: str, project_id: str, db_session: Optional[AsyncSession] = None
     ) -> bool:
