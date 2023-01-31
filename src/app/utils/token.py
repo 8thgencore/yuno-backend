@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Optional
 from uuid import UUID
 
-from aioredis import Redis
+from redis.asyncio import Redis
 
 from app.models.user_model import User
 from app.schemas.common_schema import TokenType

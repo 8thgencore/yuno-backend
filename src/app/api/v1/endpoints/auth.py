@@ -1,10 +1,10 @@
 from datetime import timedelta
 
-from aioredis import Redis
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt
 from pydantic import ValidationError
+from redis.asyncio import Redis
 
 from app import crud
 from app.api import deps

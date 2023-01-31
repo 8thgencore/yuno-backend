@@ -1,12 +1,12 @@
 from typing import AsyncGenerator, List
 from uuid import UUID
 
-import aioredis
-from aioredis import Redis
+import redis.asyncio as aioredis
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
+from redis.asyncio import Redis
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app import crud
@@ -26,8 +26,7 @@ reusable_oauth2 = OAuth2PasswordBearer(
 
 
 async def get_redis_client() -> Redis:
-    redis = await aioredis.from_url("redis://localhost", username="user", password="sEcRet")
-    redis = aioredis.from_url(
+    redis = await aioredis.from_url(
         f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
         password=settings.REDIS_PASSWORD,
         max_connections=10,

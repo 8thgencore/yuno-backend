@@ -1,6 +1,8 @@
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID
+
+from pydantic import Field, validator
 
 from app.models.user_model import UserBase
 from app.schemas.media_schema import IImageMediaRead
@@ -24,7 +26,21 @@ class IUserUpdate(UserBase):
 class IUserRead(UserBase):
     id: UUID
     role: Optional[IRoleRead] = None
-    image: Optional[IImageMediaRead]
+    image: Optional[IImageMediaRead] = Field(..., repr=True)
+    
+    # image_url: Optional[str]
+    # @validator("image_url", pre=True, check_fields=False, always=True)  
+    # # Always true because link does not exist in the database
+    # def get_image_url(cls, value: Any, values: Any) -> str:
+    #     if "image" in values:
+    #         if values["image"] is None:
+    #             return ""
+
+    #         url = values["image"].media.link
+    #         return url
+
+    # class Config:
+    #     fields = {"image": {"exclude": True}}
 
 
 class IUserStatus(str, Enum):
