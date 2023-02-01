@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: str
     REDIS_POOL_SIZE: str
 
+    # Celery
+    CELERY_BROKER_URL: str
+    CELERY_RESULT_BACKEND: str
+
+    WS_MESSAGE_QUEUE: str
+
     ASYNC_DB_URI: Optional[str]
 
     @validator("ASYNC_DB_URI", pre=True)

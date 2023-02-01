@@ -21,6 +21,16 @@ RUN pip install -r ./requirements/dev.txt
 # add app
 COPY . .
 
+# run celery worker
+COPY ./compose/celery/worker/start /start-celeryworker
+RUN sed -i 's/\r$//g' /start-celeryworker
+RUN chmod +x /start-celeryworker
+
+# run flower
+COPY ./compose/celery/flower/start /start-flower
+RUN sed -i 's/\r$//g' /start-flower
+RUN chmod +x /start-flower
+
 # add entrypoint.sh
 COPY entrypoint.sh .
 RUN chmod +x /usr/src/entrypoint.sh

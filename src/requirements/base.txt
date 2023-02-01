@@ -23,3 +23,7 @@ aiohttp==3.8.3
 
 minio==7.1.13
 pillow==9.4.0
+
+
+celery==5.2.7
+flower==1.2.0

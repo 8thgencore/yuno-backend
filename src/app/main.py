@@ -13,6 +13,7 @@ from loguru import logger
 from app.api.deps import get_redis_client
 from app.api.v1.api import api_router as api_router_v1
 from app.core.config import load_log_config, settings
+from app.utils.celery_utils import create_celery
 
 
 # Initialize the application
@@ -27,6 +28,8 @@ def create_application() -> FastAPI:
         openapi_url="/openapi.json",
         docs_url="/",
     )
+
+    app.celery_app = create_celery()
 
     app.add_middleware(
         SQLAlchemyMiddleware,
@@ -56,6 +59,7 @@ def create_application() -> FastAPI:
 
 
 app = create_application()
+celery = app.celery_app
 
 
 @app.on_event("startup")
