@@ -1,3 +1,4 @@
+import os
 from io import BytesIO
 from typing import Optional
 from uuid import UUID
@@ -21,9 +22,11 @@ from app.schemas.response_schema import (
 )
 from app.schemas.role_schema import IRoleEnum
 from app.schemas.user_schema import IUserCreate, IUserRead, IUserUpdate
+from app.tasks.media import generate_avatar_thumbnail
 from app.utils.exceptions import IdNotFoundException, UserSelfDeleteException
 from app.utils.minio_client import MinioClient
 from app.utils.resize_image import modify_image
+from app.utils.uuid6 import uuid7
 
 router = APIRouter()
 
@@ -154,12 +157,19 @@ async def upload_my_image(
     Uploads a user image
     """
     try:
-        image_modified = modify_image(BytesIO(image_file.file.read()))
+        image_bytes = BytesIO(image_file.file.read())
+        image_modified = modify_image(image_bytes)
+
+        file_name_split = os.path.splitext(image_file.filename)
+        file_name = f"{uuid7()}{file_name_split[-1]}"
+
         data_file = minio_client.put_object(
-            file_name=image_file.filename,
+            file_name=file_name,
             file_data=BytesIO(image_modified.file_data),
             content_type=image_file.content_type,
         )
+
+        # Add to Database
         media = IMediaCreate(title=title, description=description, path=data_file.file_name)
         user = await crud.user.update_photo(
             user=current_user,
@@ -168,6 +178,9 @@ async def upload_my_image(
             width=image_modified.width,
             file_format=image_modified.file_format,
         )
+
+        generate_avatar_thumbnail.delay(data_file.file_name)
+
         return create_response(data=user)
     except Exception as e:
         print(e)

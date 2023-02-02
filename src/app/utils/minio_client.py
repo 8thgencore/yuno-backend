@@ -5,8 +5,6 @@ from datetime import timedelta
 from minio import Minio
 from pydantic import BaseModel
 
-from app.utils.uuid6 import uuid7
-
 
 class IMinioResponse(BaseModel):
     bucket_name: str
@@ -51,7 +49,7 @@ class MinioClient:
     def put_object(self, file_data, file_name, content_type):
         try:
             # object_name = f"{uuid7()}{file_name}"
-            object_name = f"{uuid7()}.{file_name.split('.')[-1]}"
+            object_name = file_name
             self.client.put_object(
                 bucket_name=self.bucket_name,
                 object_name=object_name,
@@ -65,5 +63,16 @@ class MinioClient:
                 bucket_name=self.bucket_name, file_name=object_name, url=url
             )
             return data_file
+        except Exception as e:
+            raise e
+
+    def get_object(self, file_name):
+        try:
+            object = self.client.get_object(
+                bucket_name=self.bucket_name,
+                object_name=file_name,
+            )
+            return object
+
         except Exception as e:
             raise e

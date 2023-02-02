@@ -32,6 +32,7 @@ def setup(
     # Disable some packages logging
     # logging.getLogger(gino.__name__).setLevel(logging.FATAL)
     logging.getLogger("urllib3.connectionpool").setLevel(logging.FATAL)
+    logging.getLogger("multipart.multipart").setLevel(logging.FATAL)
     logging.getLogger("")
 
     # Change handler for default uvicorn logger
