@@ -179,7 +179,7 @@ async def upload_my_image(
             file_format=image_modified.file_format,
         )
 
-        generate_avatar_thumbnail.delay(data_file.file_name)
+        generate_avatar_thumbnail.delay(current_user.id, data_file.file_name)
 
         return create_response(data=user)
     except Exception as e:

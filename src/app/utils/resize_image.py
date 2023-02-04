@@ -46,7 +46,7 @@ def modify_image(image: BytesIO):
 
 
 def modify_image_resized(image: BytesIO):
-    size = (128, 128)
+    size = (256, 256)
 
     pil_image = Image.open(image)
     file_format = pil_image.format

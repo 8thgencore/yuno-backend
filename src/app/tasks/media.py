@@ -1,15 +1,20 @@
+import asyncio
 import os
 from io import BytesIO
 
 from celery import shared_task
+from sqlmodel import select
 
 from app.api import deps
+from app.db.session import SessionLocal
+from app.models.media_model import ImageMedia, Media
+from app.models.user_model import User
 from app.schemas.media_schema import IMediaCreate
 from app.utils.resize_image import modify_image_resized
 
 
 @shared_task(name="generate_avatar_thumbnail")
-def generate_avatar_thumbnail(file_name: str):
+def generate_avatar_thumbnail(user_id: str, file_name: str):
     minio_client = deps.minio_auth()
 
     image = minio_client.get_object(file_name=file_name)
@@ -28,30 +33,23 @@ def generate_avatar_thumbnail(file_name: str):
     )
 
     # Add to Database
-    IMediaCreate(title="", description="", path=data_file.file_name)
+    async def main():
+        async with SessionLocal() as db_session:
+            user = await db_session.execute(select(User).where(User.id == user_id))
+            user = user.scalar_one_or_none()
 
-    # print(media)
-    # user = await crud.user.update_photo(
-    #     user=current_user,
-    #     image=media,
-    #     heigth=image_modified.height,
-    #     width=image_modified.width,
-    #     file_format=image_modified.file_format,
-    # )
+            media = IMediaCreate(title="", description="", path=data_file.file_name)
 
-    # with db_context() as session:
-    #     member = session.query(Member).get(member_pk)
+            user.image = ImageMedia(
+                media=Media.from_orm(media),
+                height=image_modified.height,
+                width=image_modified.width,
+                file_format=image_modified.file_format,
+            )
+            db_session.add(user)
+            await db_session.commit()
+            await db_session.refresh(user)
 
-    #     full_path = os.path.join(settings.UPLOADS_DEFAULT_DEST, member.avatar)
-
-    #     thumbnail_path = f"{member.id}-thumbnail.jpg"
-    #     thumbnail_full_path = os.path.join(settings.UPLOADS_DEFAULT_DEST, thumbnail_path)
-
-    #     im = Image.open(full_path)
-    #     size = (120, 120)
-    #     im.thumbnail(size)
-    #     im.save(thumbnail_full_path, "JPEG")
-
-    #     member.avatar_thumbnail = thumbnail_path
-    #     session.add(member)
-    #     session.commit()
+    loop = asyncio.get_event_loop()
+    task = loop.create_task(main())
+    loop.run_until_complete(task)
