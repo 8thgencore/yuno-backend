@@ -53,6 +53,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
     async def remove(self, *, id: str, db_session: Optional[AsyncSession] = None) -> Project:
         db_session = db_session or db.session
 
+        # delete links
         response = await db.session.execute(
             select(ProjectUserLink).where(ProjectUserLink.project_id == id)
         )
@@ -60,6 +61,13 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         for ob in obj:
             await db_session.delete(ob)
 
+        # delete all task project
+        response = await db.session.execute(select(Task).where(Task.project_id == id))
+        obj = response.scalars().all()
+        for ob in obj:
+            await db_session.delete(ob)
+
+        # delete project
         response = await db.session.execute(select(Project).where(Project.id == id))
         obj = response.scalar_one()
         await db_session.delete(obj)

@@ -52,7 +52,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
         # get user tasks
         # query = select(Task, Project.name.label('project_name')).where(Task.project_id.in_(projects))
         # query = select(Task).where(and_(Task.project_id.in_(projects), Task.done is False))
-        query = select(Task).where(Task.project_id.in_(projects)).where(Task.done is False)
+        query = select(Task).where(Task.project_id.in_(projects)).where(Task.done == False)
         tasks = await super().get_multi_paginated(query=query)
 
         return tasks
