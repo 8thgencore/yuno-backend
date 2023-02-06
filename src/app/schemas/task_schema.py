@@ -22,4 +22,4 @@ class ITaskRead(TaskBase):
 class ITaskWithProjectName(TaskBase):
     id: UUID
     project_id: Optional[UUID]
-    project_name: str
+    project_name: Optional[str]

@@ -34,7 +34,19 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
         projects = response.scalars().all()
 
         # get user tasks
-        query = select(Task).where(Task.project_id.in_(projects))
+        query = (
+            select(
+                Task.id,
+                Task.name,
+                Task.deadline,
+                Task.done,
+                Task.project_id,
+                Project.name.label("project_name"),
+            )
+            .where(Task.project_id.in_(projects))
+            .join(Project, Project.id == Task.project_id)
+            .order_by(Task.deadline)
+        )
         tasks = await super().get_multi_paginated(query=query)
 
         return tasks
@@ -50,7 +62,6 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
         projects = response.scalars().all()
 
         # get user tasks
-        # query = select(Task).where(and_(Task.project_id.in_(projects), Task.done is False))
         query = (
             select(
                 Task.id,
@@ -63,6 +74,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
             .where(Task.project_id.in_(projects))
             .where(Task.done is False)
             .join(Project, Project.id == Task.project_id)
+            .order_by(Task.deadline)
         )
         tasks = await super().get_multi_paginated(query=query)
 
