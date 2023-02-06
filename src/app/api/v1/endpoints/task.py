@@ -13,7 +13,7 @@ from app.schemas.response_schema import (
     IPostResponseBase,
     create_response,
 )
-from app.schemas.task_schema import ITaskCreate, ITaskRead, ITaskUpdate
+from app.schemas.task_schema import ITaskCreate, ITaskRead, ITaskUpdate, ITaskWithProjectName
 from app.utils.exceptions import (
     IdNotFoundException,
     UserNotMemberProject,
@@ -26,7 +26,7 @@ router = APIRouter()
 async def get_my_tasks_list(
     params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
-) -> IGetResponsePaginated[ITaskRead]:
+) -> IGetResponsePaginated[ITaskWithProjectName]:
     """
     Get a list of my tasks
     """
@@ -38,7 +38,7 @@ async def get_my_tasks_list(
 async def get_my_not_done_tasks_list(
     params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
-) -> IGetResponsePaginated[ITaskRead]:
+) -> IGetResponsePaginated[ITaskWithProjectName]:
     """
     Get a list of my not complited tasks with project name
     """

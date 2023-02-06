@@ -6,7 +6,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.crud.base_crud import CRUDBase
 from app.models import Project, Task, User
-from app.schemas.task_schema import ITaskCreate, ITaskRead, ITaskUpdate
+from app.schemas.task_schema import ITaskCreate, ITaskUpdate, ITaskWithProjectName
 
 
 class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
@@ -25,7 +25,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
 
     async def get_by_user(
         self, *, user: User, db_session: Optional[AsyncSession] = None
-    ) -> List[ITaskRead]:
+    ) -> List[ITaskWithProjectName]:
         db_session = db_session or db.session
 
         # get user projects
@@ -41,7 +41,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
 
     async def get_not_done_by_user(
         self, *, user: User, db_session: Optional[AsyncSession] = None
-    ) -> List[ITaskRead]:
+    ) -> List[ITaskWithProjectName]:
         db_session = db_session or db.session
 
         # get user projects
@@ -50,9 +50,20 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
         projects = response.scalars().all()
 
         # get user tasks
-        # query = select(Task, Project.name.label('project_name')).where(Task.project_id.in_(projects))
         # query = select(Task).where(and_(Task.project_id.in_(projects), Task.done is False))
-        query = select(Task).where(Task.project_id.in_(projects)).where(Task.done == False)
+        query = (
+            select(
+                Task.id,
+                Task.name,
+                Task.deadline,
+                Task.done,
+                Task.project_id,
+                Project.name.label("project_name"),
+            )
+            .where(Task.project_id.in_(projects))
+            .where(Task.done is False)
+            .join(Project, Project.id == Task.project_id)
+        )
         tasks = await super().get_multi_paginated(query=query)
 
         return tasks
