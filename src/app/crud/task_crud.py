@@ -72,7 +72,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
                 Project.name.label("project_name"),
             )
             .where(Task.project_id.in_(projects))
-            .where(Task.done is False)
+            .where(Task.done == False)  # noqa
             .join(Project, Project.id == Task.project_id)
             .order_by(Task.deadline)
         )

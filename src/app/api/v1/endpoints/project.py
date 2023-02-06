@@ -33,12 +33,13 @@ router = APIRouter()
 
 @router.get("/my")
 async def get_my_projects(
+    params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IProjectWithUsers]:
     """
     Get my projects
     """
-    projects = await crud.project.get_by_user(user=current_user)
+    projects = await crud.project.get_by_user(params=params, user=current_user)
     return create_response(data=projects)
 
 

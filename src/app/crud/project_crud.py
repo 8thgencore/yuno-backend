@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from fastapi_async_sqlalchemy import db
+from fastapi_pagination import Params
 from sqlalchemy.orm import selectinload
 from sqlmodel import and_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -39,7 +40,11 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return db_obj
 
     async def get_by_user(
-        self, *, user: User, db_session: Optional[AsyncSession] = None
+        self,
+        *,
+        params: Optional[Params] = Params(),
+        user: User,
+        db_session: Optional[AsyncSession] = None,
     ) -> List[IProjectWithUsers]:
         db_session = db_session or db.session
         query = (
@@ -47,7 +52,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
             .where(Project.users.contains(user))
             .options(selectinload(Project.users))
         )
-        projects = await super().get_multi_paginated(query=query)
+        projects = await super().get_multi_paginated(params=params, query=query)
         return projects
 
     async def remove(self, *, id: str, db_session: Optional[AsyncSession] = None) -> Project:

@@ -7,6 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
 from redis.asyncio import Redis
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app import crud
@@ -38,7 +39,17 @@ async def get_redis_client() -> Redis:
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with SessionLocal() as session:
-        yield session
+        try:
+            yield session
+            await session.commit()
+        except SQLAlchemyError as sql_ex:
+            await session.rollback()
+            raise sql_ex
+        except HTTPException as http_ex:
+            await session.rollback()
+            raise http_ex
+        finally:
+            await session.close()
 
 
 async def get_general_meta() -> IMetaGeneral:
