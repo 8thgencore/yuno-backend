@@ -1,5 +1,6 @@
 fastapi==0.89.1
 uvicorn[standard]==0.20.0
+gunicorn==20.1.0
 
 # db
 sqlmodel==0.0.8
@@ -7,9 +8,9 @@ asyncpg==0.27.0
 alembic==1.9.2
 pydantic[email]==1.10.4
 sqlalchemy-utils==0.39.0
+redis==4.4.2
 fastapi-async-sqlalchemy==0.3.12
 fastapi-pagination==0.11.3
-redis==4.4.2
 fastapi-cache2[redis]==0.2.0
 
 # utils
@@ -24,6 +25,6 @@ aiohttp==3.8.3
 minio==7.1.13
 pillow==9.4.0
 
-
+# celery
 celery==5.2.7
 flower==1.2.0

@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.10.9-slim-buster
+FROM python:3.10-slim-buster
 
 # set working directory
 WORKDIR /usr/src
@@ -18,18 +18,23 @@ RUN pip install --upgrade pip
 COPY ./requirements/*.txt ./requirements/
 RUN pip install -r ./requirements/dev.txt
 
-# add app
-COPY . .
+# run fastapi project
+COPY ./compose/local/start /start
+RUN sed -i 's/\r$//g' /start
+RUN chmod +x /start
 
 # run celery worker
-COPY ./compose/celery/worker/start /start-celeryworker
+COPY ./compose/local/celery/worker/start /start-celeryworker
 RUN sed -i 's/\r$//g' /start-celeryworker
 RUN chmod +x /start-celeryworker
 
 # run flower
-COPY ./compose/celery/flower/start /start-flower
+COPY ./compose/local/celery/flower/start /start-flower
 RUN sed -i 's/\r$//g' /start-flower
 RUN chmod +x /start-flower
+
+# add app
+COPY . .
 
 # add entrypoint.sh
 COPY entrypoint.sh .
