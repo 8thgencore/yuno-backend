@@ -9,35 +9,35 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 RUN addgroup --system fastapi \
-    && adduser --system --ingroup fastapi fastapi
+  && adduser --system --ingroup fastapi fastapi
 
 # install system dependencies
 RUN apt-get update \
-  && apt-get -y install netcat gcc postgresql \
+  && apt-get -y --no-install-recommends install netcat gcc postgresql \
   && apt-get clean
 
 # install python dependencies
-RUN pip install --upgrade pip
+RUN pip install --no-cache-dir --upgrade pip
 COPY ./requirements/*.txt ./requirements/
-RUN pip install -r ./requirements/base.txt
+RUN pip install --no-cache-dir -r ./requirements/base.txt
 
 # run fastapi project
 COPY ./compose/local/start /start
-RUN sed -i 's/\r$//g' /start
-RUN chmod +x /start
-RUN chown fastapi /start
+RUN sed -i 's/\r$//g' /start \
+  && chmod +x /start \
+  && chown fastapi /start
 
 # run celery worker
 COPY ./compose/production/celery/worker/start /start-celeryworker
-RUN sed -i 's/\r$//g' /start-celeryworker
-RUN chmod +x /start-celeryworker
-RUN chown fastapi /start-celeryworker
+RUN sed -i 's/\r$//g' /start-celeryworker \
+  && chmod +x /start-celeryworker \
+  && chown fastapi /start-celeryworker
 
 # run flower
 COPY ./compose/production/celery/flower/start /start-flower
-RUN sed -i 's/\r$//g' /start-flower
-RUN chmod +x /start-flower
-RUN chown fastapi /start-flower
+RUN sed -i 's/\r$//g' /start-flower \
+  && chmod +x /start-flower \
+  && chown fastapi /start-flower
 
 # add app
 COPY . .

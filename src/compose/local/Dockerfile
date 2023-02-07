@@ -10,28 +10,28 @@ ENV PYTHONUNBUFFERED 1
 
 # install system dependencies
 RUN apt-get update \
-  && apt-get -y install netcat gcc postgresql \
+  && apt-get -y --no-install-recommends install netcat gcc postgresql \
   && apt-get clean
 
 # install python dependencies
-RUN pip install --upgrade pip
+RUN pip install --no-cache-dir --upgrade pip
 COPY ./requirements/*.txt ./requirements/
-RUN pip install -r ./requirements/dev.txt
+RUN pip install --no-cache-dir -r ./requirements/dev.txt
 
 # run fastapi project
 COPY ./compose/local/start /start
-RUN sed -i 's/\r$//g' /start
-RUN chmod +x /start
+RUN sed -i 's/\r$//g' /start \
+  && chmod +x /start
 
 # run celery worker
 COPY ./compose/local/celery/worker/start /start-celeryworker
-RUN sed -i 's/\r$//g' /start-celeryworker
-RUN chmod +x /start-celeryworker
+RUN sed -i 's/\r$//g' /start-celeryworker \
+  && chmod +x /start-celeryworker
 
 # run flower
 COPY ./compose/local/celery/flower/start /start-flower
-RUN sed -i 's/\r$//g' /start-flower
-RUN chmod +x /start-flower
+RUN sed -i 's/\r$//g' /start-flower \
+  && chmod +x /start-flower
 
 # add app
 COPY . .

@@ -1,7 +1,26 @@
-env
-venv
 .dockerignore
 Dockerfile
 Dockerfile.prod
 htmlcov
 .coverage
+
+# Environments
+.env
+.env.prod
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs directory
+logs/
+
+# ruff
+.ruff_cache/

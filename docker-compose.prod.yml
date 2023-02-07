@@ -8,8 +8,6 @@ services:
       dockerfile: ./compose/production/Dockerfile
     command: /start
     restart: unless-stopped
-    volumes:
-      - ./src:/usr/src
     ports:
       - 8080:8000
     env_file:
@@ -29,7 +27,7 @@ services:
     environment:
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASS:-postgres}
-      - POSTGRES_DB=${DB_NAME:-db}
+      - POSTGRES_DB=${DB_NAME:-db-prod}
 
   redis-server:
     container_name: ${REDIS_CONTAINER_NAME:-yuno-redis-container}
@@ -71,14 +69,12 @@ services:
       timeout: 20s
       retries: 3
 
-  celery_worker:
+  celery-worker:
     container_name: ${CELERY_WORKER_CONTAINER_NAME:-yuno-celery-worker-container}
     build:
       context: ./src
       dockerfile: ./compose/production/Dockerfile
     command: /start-celeryworker
-    volumes:
-      - ./src:/usr/src
     env_file:
       - .env.prod
     depends_on:
@@ -91,8 +87,6 @@ services:
       context: ./src
       dockerfile: ./compose/production/Dockerfile
     command: /start-flower
-    volumes:
-      - ./src:/usr/src
     env_file:
       - .env.prod
     ports:
@@ -103,3 +97,4 @@ services:
 
 volumes:
   postgres_data:
+  

@@ -1,6 +1,6 @@
 -r base.txt
 
-mypy==0.991
+mypy==1.0.0
 yesqa==1.4.0
 httpx==0.23.3
 
