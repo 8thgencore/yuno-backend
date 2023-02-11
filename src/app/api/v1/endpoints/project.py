@@ -127,7 +127,7 @@ async def join_to_project_by_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponseBase[IProjectWithUsers]:
     """
-    Join the project
+    Endpoint for a user to join a project
     """
     current_project = await crud.project.get(id=project_id)
     if not current_project:
@@ -146,7 +146,7 @@ async def leave_to_project_by_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponseBase[IProjectWithUsers]:
     """
-    Leave the project
+    Endpoint for a user to leave a project
     """
     current_project = await crud.project.get(id=project_id)
     if not current_project:
@@ -165,7 +165,7 @@ async def tasks_list_by_project_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[ITaskRead]:
     """
-    This endpoint is used to retrieve a list of tasks associated with a specific project.
+    This endpoint allows getting a list of tasks associated with a project.
     """
     current_project = await crud.project.get(id=project_id)
     if not current_project:
@@ -181,7 +181,7 @@ async def members_list_by_project_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IUserRead]:
     """
-    Endpoint for getting a list of members the project
+    This endpoint allows getting a list of members associated with a project.
     """
     current_project = await crud.project.get(id=project_id)
     if not current_project:
