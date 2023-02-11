@@ -25,8 +25,14 @@ class IUserUpdate(UserBase):
 
 class IUserRead(UserBase):
     id: UUID
+    image: Optional[IImageMediaRead] = Field(..., repr=True)
+    
+
+class IUserReadWithRole(UserBase):
+    id: UUID
     role: Optional[IRoleRead] = None
     image: Optional[IImageMediaRead] = Field(..., repr=True)
+
 
     # image_url: Optional[str]
     # @validator("image_url", pre=True, check_fields=False, always=True)

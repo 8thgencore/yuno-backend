@@ -10,12 +10,11 @@ from app.crud.base_crud import CRUDBase
 from app.models import Project, ProjectUserLink, Task, User
 from app.schemas.project_schema import (
     IProjectCreate,
+    IProjectRead,
     IProjectUpdate,
     IProjectWithUsers,
 )
-from app.schemas.task_schema import (
-    ITaskRead,
-)
+from app.schemas.task_schema import ITaskRead
 
 
 class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
@@ -47,6 +46,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         db_session: Optional[AsyncSession] = None,
     ) -> List[IProjectWithUsers]:
         db_session = db_session or db.session
+
         query = (
             select(Project)
             .where(Project.users.contains(user))
@@ -84,6 +84,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         self, *, user_id: str, project_id: str, db_session: Optional[AsyncSession] = None
     ) -> bool:
         db_session = db_session or db.session
+
         query = select(ProjectUserLink).where(
             and_(
                 ProjectUserLink.user_id == user_id,
@@ -99,6 +100,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         self, *, user: User, project: Project, db_session: Optional[AsyncSession] = None
     ) -> Project:
         db_session = db_session or db.session
+
         project_user_link = ProjectUserLink(
             user_id=user.id,
             project_id=project.id,
@@ -134,6 +136,15 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         db_session = db_session or db.session
 
         query = select(Task).where(Task.project_id == project_id)
+        tasks = await super().get_multi_paginated(query=query)
+        return tasks
+
+    async def get_members(
+        self, *, project: IProjectRead, db_session: Optional[AsyncSession] = None
+    ) -> List[ITaskRead]:
+        db_session = db_session or db.session
+
+        query = select(User).where(User.projects.contains(project))
         tasks = await super().get_multi_paginated(query=query)
         return tasks
 

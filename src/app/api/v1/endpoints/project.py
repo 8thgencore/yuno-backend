@@ -21,6 +21,7 @@ from app.schemas.response_schema import (
     create_response,
 )
 from app.schemas.task_schema import ITaskRead
+from app.schemas.user_schema import IUserRead
 from app.utils.exceptions import (
     IdNotFoundException,
     UserNotCreatorProject,
@@ -37,7 +38,7 @@ async def get_my_projects(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IProjectWithUsers]:
     """
-    Get my projects
+    Endpoint for getting the projects of the authenticated user
     """
     projects = await crud.project.get_by_user(params=params, user=current_user)
     return create_response(data=projects)
@@ -49,7 +50,7 @@ async def read_project_list(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IProjectWithUsers]:
     """
-    Gets a projects list
+    Endpoint for getting a list of projects
     """
     projects = await crud.project.get_multi_paginated(params=params)
     return create_response(data=projects)
@@ -159,12 +160,12 @@ async def leave_to_project_by_id(
 
 
 @router.get("/{project_id}/tasks")
-async def tasks_list_project_by_id(
+async def tasks_list_by_project_id(
     project_id: UUID,
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[ITaskRead]:
     """
-    Get tasks list by project id
+    This endpoint is used to retrieve a list of tasks associated with a specific project.
     """
     current_project = await crud.project.get(id=project_id)
     if not current_project:
@@ -172,3 +173,19 @@ async def tasks_list_project_by_id(
 
     tasks = await crud.project.get_tasks(project_id=project_id)
     return create_response(data=tasks)
+
+
+@router.get("/{project_id}/members")
+async def members_list_by_project_id(
+    project_id: UUID,
+    current_user: User = Depends(deps.get_current_user()),
+) -> IGetResponsePaginated[IUserRead]:
+    """
+    Endpoint for getting a list of members the project
+    """
+    current_project = await crud.project.get(id=project_id)
+    if not current_project:
+        raise IdNotFoundException(Project, id=project_id)
+
+    projects = await crud.project.get_members(project=current_project)
+    return create_response(data=projects)
