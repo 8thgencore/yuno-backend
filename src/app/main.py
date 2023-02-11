@@ -16,11 +16,13 @@ from app.core.config import load_log_config, settings
 from app.utils.celery_utils import create_celery
 
 
-# Initialize the application
+# Initialize the application and create a FastAPI instance
 def create_application() -> FastAPI:
+    # Load the log configuration
     load_log_config()
     logger.info("Starting application")
 
+    # Create an instance of FastAPI
     app = FastAPI(
         title=settings.APP_TITLE,
         version=settings.APP_VERSION,
@@ -29,8 +31,10 @@ def create_application() -> FastAPI:
         docs_url="/",
     )
 
+    # Create a celery instance and set it as an attribute of the app
     app.celery_app = create_celery()
 
+    # Add SQLAlchemyMiddleware to the application
     app.add_middleware(
         SQLAlchemyMiddleware,
         db_url=settings.ASYNC_DB_URI,
@@ -42,7 +46,7 @@ def create_application() -> FastAPI:
         },
     )
 
-    # Set all CORS enabled origins
+    # If there are any CORS enabled origins, add a CORSMiddleware to the application
     if settings.BACKEND_CORS_ORIGINS:
         app.add_middleware(
             CORSMiddleware,
@@ -52,13 +56,19 @@ def create_application() -> FastAPI:
             allow_headers=["*"],
         )
 
+    # Include the API router
     app.include_router(api_router_v1, prefix=settings.API_PREFIX)
+
+    # Add pagination to the application
     add_pagination(app)
 
     return app
 
 
+# Create the application
 app = create_application()
+
+# Get the celery instance
 celery = app.celery_app
 
 

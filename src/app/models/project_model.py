@@ -25,5 +25,8 @@ class Project(BaseUUIDModel, ProjectBase, table=True):
     )
     tasks: List["Task"] = Relationship(  # noqa: F821
         back_populates="project",
-        sa_relationship_kwargs={"lazy": "selectin"},
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            "order_by": "asc(Task.done)",
+        },
     )
