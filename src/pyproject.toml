@@ -2,7 +2,7 @@
 name = "yuno"
 version = "0.1.0"
 description = "Task management backend service"
-authors = ["8thgencore"]
+authors = ["8thgencore <8th@example.com>"]
 
 [tool.black]
 line-length = 99
@@ -33,31 +33,25 @@ ignore = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-alembic = "^1.8.1"
+alembic = "^1.9.3"
 asyncpg = "^0.27.0"
 fastapi = {extras = ["all"], version = "^0.91.0"}
 sqlmodel = "^0.0.8"
-python-jose = "^3.3.0"
-cryptography = "^38.0.3"
 passlib = "^1.7.4"
-SQLAlchemy-Utils = "^0.38.3"
-SQLAlchemy = "^1.4.40"
-fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.11.0"}
+fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.11.3"}
 fastapi-cache2 = {extras = ["redis"], version = "^0.2.0"}
-minio = "^7.1.12"
-Pillow = "^9.3.0"
+minio = "^7.1.13"
+Pillow = "^9.4.0"
 watchfiles = "^0.18.1"
-asyncer = "^0.0.2"
-httpx = "^0.23.1"
-pandas = "^1.5.3"
-openpyxl = "^3.0.10"
-redis = "^4.4.2"
+redis = "^4.5.1"
 fastapi-async-sqlalchemy = "^0.3.12"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
-black = "^22.10.0"
-ruff = "^0.0.214"
+yesqa = "^1.4.0"
+httpx = "^0.23.3"
+pytest = "^7.2.1"
+black = "^23.1.0"
+ruff = "^0.0.245"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
