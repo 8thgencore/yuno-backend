@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 services:
   web:
@@ -20,7 +20,7 @@ services:
     image: postgres:14-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    expose: 
+    expose:
       - 5432
     env_file:
       - .env.prod
@@ -41,7 +41,7 @@ services:
       #   code and print a message, when the variable is not set or empty
       - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
     restart: unless-stopped
-    expose: 
+    expose:
       - 6379
     env_file:
       - .env.prod
@@ -51,7 +51,7 @@ services:
   minio:
     container_name: ${MINIO_CONTAINER_NAME:-yuno-minio-container}
     image: minio/minio:latest
-    command: "server /data --console-address ':9001'"  
+    command: "server /data --console-address ':9001'"
     volumes:
       - ./minio/data:/data
     ports:
@@ -97,4 +97,3 @@ services:
 
 volumes:
   postgres_data:
-  

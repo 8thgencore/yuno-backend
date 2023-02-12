@@ -33,18 +33,18 @@ ignore = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
+fastapi = {extras = ["all"], version = "^0.91.0"}
 alembic = "^1.9.3"
 asyncpg = "^0.27.0"
-fastapi = {extras = ["all"], version = "^0.91.0"}
-sqlmodel = "^0.0.8"
 passlib = "^1.7.4"
-fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.11.3"}
+sqlmodel = "^0.0.8"
+fastapi-async-sqlalchemy = "^0.3.12"
 fastapi-cache2 = {extras = ["redis"], version = "^0.2.0"}
+fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.11.3"}
 minio = "^7.1.13"
 Pillow = "^9.4.0"
 watchfiles = "^0.18.1"
 redis = "^4.5.1"
-fastapi-async-sqlalchemy = "^0.3.12"
 
 [tool.poetry.dev-dependencies]
 yesqa = "^1.4.0"
