@@ -1,11 +1,13 @@
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi_async_sqlalchemy import db
-from sqlmodel import select
+from sqlmodel import and_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.crud.base_crud import CRUDBase
 from app.models import Project, Task, User
+from app.models.base_uuid_model import UTCDatetime
 from app.schemas.task_schema import ITaskCreate, ITaskUpdate, ITaskWithProjectName
 
 
@@ -73,6 +75,38 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
             )
             .where(Task.project_id.in_(projects))
             .where(Task.done == False)  # noqa
+            .join(Project, Project.id == Task.project_id)
+            .order_by(Task.deadline)
+        )
+        tasks = await super().get_multi_paginated(query=query)
+
+        return tasks
+
+    async def get_by_deadline(
+        self, *, user: User, date: UTCDatetime, db_session: Optional[AsyncSession] = None
+    ) -> List[ITaskWithProjectName]:
+        db_session = db_session or db.session
+
+        # get user projects
+        query = select(Project.id).where(Project.users.contains(user))
+        response = await db_session.execute(query)
+        projects = response.scalars().all()
+
+        date_from = datetime.fromordinal(date.toordinal())
+        date_to = datetime.fromordinal(date.toordinal() + 1)
+
+        # get user tasks
+        query = (
+            select(
+                Task.id,
+                Task.name,
+                Task.deadline,
+                Task.done,
+                Task.project_id,
+                Project.name.label("project_name"),
+            )
+            .where(Task.project_id.in_(projects))
+            .where(and_(Task.deadline > date_from, Task.deadline < date_to))
             .join(Project, Project.id == Task.project_id)
             .order_by(Task.deadline)
         )

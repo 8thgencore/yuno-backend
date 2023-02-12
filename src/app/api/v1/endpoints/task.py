@@ -6,6 +6,7 @@ from fastapi_pagination import Params
 from app import crud
 from app.api import deps
 from app.models import Project, Task, User
+from app.models.base_uuid_model import UTCDatetime
 from app.schemas.response_schema import (
     IDeleteResponseBase,
     IGetResponseBase,
@@ -13,7 +14,12 @@ from app.schemas.response_schema import (
     IPostResponseBase,
     create_response,
 )
-from app.schemas.task_schema import ITaskCreate, ITaskRead, ITaskUpdate, ITaskWithProjectName
+from app.schemas.task_schema import (
+    ITaskCreate,
+    ITaskRead,
+    ITaskUpdate,
+    ITaskWithProjectName,
+)
 from app.utils.exceptions import (
     IdNotFoundException,
     UserNotMemberProject,
@@ -28,7 +34,10 @@ async def get_my_tasks_list(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[ITaskWithProjectName]:
     """
-    Get a list of my tasks
+    Endpoint to retrieve the tasks list of the current user.
+
+    Returns:
+        A paginated response containing the tasks with the project name.
     """
     tasks = await crud.task.get_by_user(user=current_user)
     return create_response(data=tasks)
@@ -40,25 +49,53 @@ async def get_my_not_done_tasks_list(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[ITaskWithProjectName]:
     """
-    Get a list of my not complited tasks with project name
+    Endpoint to retrieve the not done tasks list of the current user.
+
+    Returns:
+        A paginated response containing the not done tasks with the project name.
     """
     tasks = await crud.task.get_not_done_by_user(user=current_user)
     return create_response(data=tasks)
 
 
+@router.get("/by_deadline")
+async def get_tasks_list_by_deadline(
+    date: UTCDatetime,
+    params: Params = Depends(),
+    current_user: User = Depends(deps.get_current_user()),
+) -> IGetResponsePaginated[ITaskWithProjectName]:
+    """
+    Endpoint to retrieve the tasks list of the current user by deadline.
+
+    Args:
+      - date: A filter to retrieve tasks by a specific deadline.
+
+    Returns:
+        A paginated response containing the tasks with the project name.
+    """
+    tasks = await crud.task.get_by_deadline(user=current_user, date=date)
+    return create_response(data=tasks)
+
+
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_task(
-    new_task: ITaskCreate,
+    task: ITaskCreate,
     current_user: User = Depends(deps.get_current_user()),
 ) -> IPostResponseBase[ITaskRead]:
     """
-    Creates a new task
-    """
-    if new_task.project_id:
-        await check_user_member_project(user_id=current_user.id, project_id=new_task.project_id)
+    Endpoint to create a new task.
 
-    task = await crud.task.create(obj_in=new_task, user=current_user)
-    return create_response(data=task)
+    Args:
+      - task: Task data to be created.
+
+    Returns:
+        The created task data.
+    """
+    if task.project_id:
+        await check_user_member_project(user_id=current_user.id, project_id=task.project_id)
+
+    new_task = await crud.task.create(obj_in=task, user=current_user)
+    return create_response(data=new_task)
 
 
 @router.get("/{task_id}")
@@ -67,7 +104,13 @@ async def get_task_by_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponseBase[ITaskRead]:
     """
-    Gets a task by id
+    Endpoint to get a task by ID.
+
+    Args:
+      - task_id: ID of the task to update.
+
+    Returns:
+        The task data.
     """
     if task := await crud.task.get(id=task_id):
         return create_response(data=task)
@@ -82,7 +125,14 @@ async def update_task_by_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IPostResponseBase[ITaskRead]:
     """
-    Update a task by id
+    Endpoint to update a task by ID.
+
+    Args:
+      - task_id: ID of the task to update.
+      - task: Task data to be updated.
+
+    Returns:
+        The updated task data.
     """
     current_task = await crud.task.get(id=task_id)
     if not current_task:
@@ -103,7 +153,13 @@ async def remove_task_by_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IDeleteResponseBase[ITaskRead]:
     """
-    Delete a task by id
+    Endpoint to delete a task by ID.
+
+    Args:
+      - task_id: ID of the task to delete.
+
+    Returns:
+        The deleted task data.
     """
     current_task = await crud.task.get(id=task_id)
     if not current_task:
