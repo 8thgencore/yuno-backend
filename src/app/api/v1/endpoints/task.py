@@ -45,17 +45,17 @@ async def get_my_tasks_list(
 
 
 @router.get("/not_done")
-async def get_my_not_done_tasks_list(
+async def get_my_not_completed_tasks_list(
     params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[ITaskWithProjectName]:
     """
-    Endpoint to retrieve the not done tasks list of the current user.
+    Endpoint to retrieve the not completed tasks list of the current user.
 
     Returns:
-        A paginated response containing the not done tasks with the project name.
+        A paginated response containing the not completed tasks with the project name.
     """
-    tasks = await crud.task.get_not_done_by_user(user=current_user)
+    tasks = await crud.task.get_not_completed_by_user(user=current_user)
     return create_response(data=tasks)
 
 

@@ -26,14 +26,14 @@ class User(BaseUUIDModel, UserBase, table=True):
     hashed_password: Optional[str] = Field(nullable=False, index=True)
     role: Optional["Role"] = Relationship(  # noqa: F821
         back_populates="users",
-        sa_relationship_kwargs={"lazy": "selectin"},
+        sa_relationship_kwargs={"lazy": "joined"},
     )
     is_active: bool = Field(default=True)
     is_superuser: bool = Field(default=False)
     image_id: Optional[UUID] = Field(default=None, foreign_key="ImageMedia.id")
     image: ImageMedia = Relationship(
         sa_relationship_kwargs={
-            "lazy": "selectin",
+            "lazy": "joined",
             "primaryjoin": "User.image_id==ImageMedia.id",
         }
     )

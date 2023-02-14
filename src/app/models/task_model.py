@@ -18,5 +18,5 @@ class Task(BaseUUIDModel, TaskBase, table=True):
     project_id: Optional[UUID] = Field(default=None, foreign_key="Project.id")
     project: Optional["Project"] = Relationship(  # noqa: F821
         back_populates="tasks",
-        sa_relationship_kwargs={"lazy": "selectin"},
+        sa_relationship_kwargs={"lazy": "joined"},
     )

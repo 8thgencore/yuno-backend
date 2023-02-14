@@ -53,7 +53,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
 
         return tasks
 
-    async def get_not_done_by_user(
+    async def get_not_completed_by_user(
         self, *, user: User, db_session: Optional[AsyncSession] = None
     ) -> List[ITaskWithProjectName]:
         db_session = db_session or db.session
