@@ -12,6 +12,7 @@ class ProjectBase(SQLModel):
     name: str
     description: str
     link: str
+    percent_completed: float = Field(default=0)
 
 
 class Project(BaseUUIDModel, ProjectBase, table=True):

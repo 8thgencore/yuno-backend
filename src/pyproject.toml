@@ -24,6 +24,7 @@ ignore = [
     "B904",
     "B006",    
     "E501",  # line too long, handled by black
+    "E712",  # in sqlmodel better used ==
     "B008",  # do not perform function calls in argument defaults
     "C901",  # too complex
 ]
