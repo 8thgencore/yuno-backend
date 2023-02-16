@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class IAuthLogin(BaseModel):
@@ -13,5 +13,13 @@ class IAuthRegister(BaseModel):
 
 
 class IAuthChangePassword(BaseModel):
-    current: str
-    new: str
+    """ChangePassword Input Schema"""
+
+    current: str = Field(description="Current password of a user")
+    new: str = Field(description="New password of a user")
+
+
+class IAuthForgetPassword(BaseModel):
+    """ForgetPassword Input Schema"""
+
+    email: str = Field(description="Email address of a user.")

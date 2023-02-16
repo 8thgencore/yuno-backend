@@ -28,3 +28,6 @@ pillow==9.4.0
 # celery
 celery==5.2.7
 flower==1.2.0
+
+# mail
+fastapi-mail==1.2.5

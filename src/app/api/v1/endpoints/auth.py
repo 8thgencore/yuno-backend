@@ -12,11 +12,18 @@ from app.core import security
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
 from app.models.user_model import User
-from app.schemas.auth_schema import IAuthChangePassword, IAuthLogin, IAuthRegister
+from app.schemas.auth_schema import (
+    IAuthChangePassword,
+    IAuthForgetPassword,
+    IAuthLogin,
+    IAuthRegister,
+)
 from app.schemas.common_schema import IMetaGeneral, TokenType
 from app.schemas.response_schema import IPostResponseBase, create_response
 from app.schemas.token_schema import RefreshToken, Token, TokenRead
 from app.schemas.user_schema import IUserCreate, IUserRead
+from app.tasks import send_verification_email
+from app.utils.exceptions import EmailNotFoundException
 from app.utils.token import add_token_to_redis, delete_tokens, get_valid_tokens
 
 router = APIRouter()
@@ -29,7 +36,16 @@ async def login(
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> IPostResponseBase[Token]:
     """
-    Login for all users
+    Authenticate a user with email and password.
+
+    Args:
+      - `IAuthLogin`: The user's login credentials.
+
+    Returns:
+      - `Token`: object containing a JWT access token and refresh token.
+
+    Raises:
+      - `HTTPException`: If the email or password is incorrect, or if the user is inactive.
     """
     user = await crud.user.authenticate(email=login_user.email, password=login_user.password)
     if not user:
@@ -75,7 +91,16 @@ async def register(
     register_user: IAuthRegister,
 ) -> IPostResponseBase[IUserRead]:
     """
-    Create new user
+    Register a new user.
+
+    Args:
+      - `IAuthRegister`: The user to register, including their email, username, and password.
+
+    Returns:
+      - `UserRead`: A response containing the newly created user's information.
+
+    Raises:
+      - `HTTPException`: If the user already exists.
     """
     register_user = await deps.user_exists(user=register_user)
     new_user = IUserCreate(
@@ -105,6 +130,16 @@ async def login_access_token(
 ) -> TokenRead:
     """
     OAuth2 compatible token login, get an access token for future requests
+
+    Parameters:
+      - `OAuth2PasswordRequestForm`: Form data containing email and password of the user.
+
+    Returns:
+      - `TokenRead`: Access token generated for the user.
+
+    Raises:
+      - `HTTPException` : If the email or password is incorrect, or if the user is inactive.
+
     """
     user = await crud.user.authenticate(email=form_data.username, password=form_data.password)
     if not user:
@@ -135,7 +170,16 @@ async def get_new_access_token(
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> IPostResponseBase[TokenRead]:
     """
-    Gets a new access token using the refresh token for future requests
+    OAuth2 compatible token, get an access token for future requests using refresh token
+
+    Parameters:
+      - `RefreshToken`: Request body containing the refresh token.
+
+    Returns:
+      - `TokenRead`: Response body containing the new access token.
+
+    Raises:
+      - `HTTPException`: If the refresh token is invalid, has expired or is not associated with the user.
     """
     try:
         payload = jwt.decode(
@@ -184,7 +228,16 @@ async def change_password(
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> IPostResponseBase[Token]:
     """
-    Change password
+    This endpoint allows the user to change their password.
+
+    Args:
+      - `IAuthChangePassword`: The request body, which should include the user's current and new passwords.
+
+    Returns:
+      - `Token`: A response containing the new access token, refresh token, and user information.
+
+    Raises:
+      - `HTTPException`: If the current password is invalid or if the new password is the same as the current password.
     """
     if not verify_password(password.current, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid Current Password")
@@ -195,11 +248,13 @@ async def change_password(
             detail="New Password should be different that the current one",
         )
 
+    # Update the user's password in the database
     new_hashed_password = get_password_hash(password.new)
     await crud.user.update(
         obj_current=current_user, obj_new={"hashed_password": new_hashed_password}
     )
 
+    # Create new access and refresh tokens
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(
@@ -215,8 +270,11 @@ async def change_password(
         user=current_user,
     )
 
+    # Delete any existing access and refresh tokens for the user
     await delete_tokens(redis_client, current_user, TokenType.ACCESS)
     await delete_tokens(redis_client, current_user, TokenType.REFRESH)
+
+    # Add the new access and refresh tokens to Redis
     await add_token_to_redis(
         redis_client,
         current_user,
@@ -233,3 +291,28 @@ async def change_password(
     )
 
     return create_response(data=data, message="New password generated")
+
+
+@router.post("/forget-password", status_code=202)
+async def forget_password(request_data: IAuthForgetPassword):
+    """
+    This endpoint sends a verification email containing a one-time password to the provided email address.
+
+    Args:
+      - `IAuthForgetPassword`: The request body, which should include an email address.
+
+    Returns:
+      - `dict`: A dictionary containing a success message indicating that the OTP code has been sent to the email address.
+
+    Raises:
+      - `HTTPException`: If the provided email address is not associated with an existing user.
+    """
+    email = request_data.email
+    current_user = await crud.user.get_by_email(email=email)
+    if not current_user:
+        raise EmailNotFoundException(email=email)
+
+    # Send the verification email containing the OTP code
+    send_verification_email.delay(email_to=email, otp_code=113377)
+
+    return create_response(data={}, message="OTP code sent to e-mail")

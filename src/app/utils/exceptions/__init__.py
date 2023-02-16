@@ -9,4 +9,4 @@ from .project_exception import (
     UserNotCreatorProject,
     UserNotMemberProject,
 )
-from .user_exceptions import UserSelfDeleteException
+from .user_exceptions import EmailNotFoundException, UserSelfDeleteException

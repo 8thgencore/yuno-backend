@@ -22,7 +22,7 @@ from app.schemas.response_schema import (
 )
 from app.schemas.role_schema import IRoleEnum
 from app.schemas.user_schema import IUserCreate, IUserRead, IUserUpdate
-from app.tasks.media import generate_avatar_thumbnail
+from app.tasks import generate_avatar_thumbnail
 from app.utils.exceptions import IdNotFoundException, UserSelfDeleteException
 from app.utils.minio_client import MinioClient
 from app.utils.resize_image import modify_image

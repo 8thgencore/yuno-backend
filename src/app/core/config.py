@@ -1,7 +1,9 @@
 from datetime import datetime, time, timedelta
 from functools import lru_cache
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from fastapi_mail import ConnectionConfig
 from loguru import logger
 from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
 
@@ -9,46 +11,31 @@ from app.core import logging
 
 
 class Settings(BaseSettings):
-    # Application
+    # --------------------------------------------------
+    # > Application
+    # --------------------------------------------------
     APP_TITLE: str = "yuno"
     APP_VERSION: str = "1.0.0"
     APP_DESCRIPTION: str = "My app"
 
-    # Api
     API_VERSION: str = "v1"
     API_PREFIX: str = f"/api/{API_VERSION}"
 
+    SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 30  # 30 days
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 180  # 180 days
-    SECRET_KEY: str
 
-    # Postgres
+    # --------------------------------------------------
+    # > Postgres
+    # --------------------------------------------------
     DB_SCHEME: str
     DB_USER: str
     DB_PASSWORD: str
     DB_HOST: str
     DB_PORT: int | str
     DB_NAME: str
-
-    # Minio
-    MINIO_ROOT_USER: str
-    MINIO_ROOT_PASSWORD: str
-    MINIO_URL: str
-    MINIO_BUCKET: str
-
-    # Redis
-    REDIS_HOST: str
-    REDIS_PORT: str
-    REDIS_PASSWORD: str
-    REDIS_POOL_SIZE: str
-
-    # Celery
-    CELERY_BROKER_URL: str
-    result_backend: str
-
-    WS_MESSAGE_QUEUE: str
 
     ASYNC_DB_URI: Optional[str]
 
@@ -65,6 +52,63 @@ class Settings(BaseSettings):
             path=f"/{values.get('DB_NAME') or ''}",
         )
 
+    # --------------------------------------------------
+    # > Minio
+    # --------------------------------------------------
+    MINIO_ROOT_USER: str
+    MINIO_ROOT_PASSWORD: str
+    MINIO_URL: str
+    MINIO_BUCKET: str
+
+    # --------------------------------------------------
+    # > Redis
+    # --------------------------------------------------
+    REDIS_HOST: str
+    REDIS_PORT: str
+    REDIS_PASSWORD: str
+    REDIS_POOL_SIZE: str
+
+    # --------------------------------------------------
+    # > Celery
+    # --------------------------------------------------
+    CELERY_BROKER_URL: str
+    result_backend: str
+
+    WS_MESSAGE_QUEUE: str
+
+    # --------------------------------------------------
+    # > Mail
+    # --------------------------------------------------
+    MAIL_USERNAME: Optional[str]
+    MAIL_PASSWORD: Optional[str]
+    MAIL_FROM: Optional[str]
+    MAIL_PORT: Optional[int]
+    MAIL_SERVER: Optional[str]
+    MAIL_STARTTLS: Optional[bool]
+    MAIL_SSL_TLS: Optional[bool]
+    EMAIL_TEMPLATES_DIR: Optional[Path | str] = Path(__file__).parent.parent / "templates/"
+    EMAIL_CONNECTION_CONFIG: Optional[ConnectionConfig] = None
+
+    @validator("EMAIL_CONNECTION_CONFIG", pre=True)
+    def assemble_email_config(
+        cls, v: Optional[ConnectionConfig], values: Dict[str, Any]
+    ) -> Optional[ConnectionConfig]:
+        if isinstance(v, ConnectionConfig):
+            return v
+        return ConnectionConfig(
+            MAIL_USERNAME=values.get("MAIL_USERNAME"),
+            MAIL_PASSWORD=values.get("MAIL_PASSWORD"),
+            MAIL_FROM=values.get("MAIL_FROM"),
+            MAIL_PORT=values.get("MAIL_PORT"),
+            MAIL_SERVER=values.get("MAIL_SERVER"),
+            MAIL_STARTTLS=values.get("MAIL_STARTTLS"),
+            MAIL_SSL_TLS=values.get("MAIL_SSL_TLS"),
+            TEMPLATE_FOLDER=values.get("EMAIL_TEMPLATES_DIR"),
+        )
+
+    # --------------------------------------------------
+    # > Misc
+    # --------------------------------------------------
     BACKEND_CORS_ORIGINS: List[str] | List[AnyHttpUrl]
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
