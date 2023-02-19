@@ -24,6 +24,7 @@ from app.schemas.token_schema import RefreshToken, Token, TokenRead
 from app.schemas.user_schema import IUserCreate, IUserRead
 from app.tasks import send_verification_email
 from app.utils.exceptions import EmailNotFoundException
+from app.utils.otp import add_otp_to_redis, delete_otps
 from app.utils.token import add_token_to_redis, delete_tokens, get_valid_tokens
 
 router = APIRouter()
@@ -294,7 +295,10 @@ async def change_password(
 
 
 @router.post("/forget-password", status_code=202)
-async def forget_password(request_data: IAuthForgetPassword):
+async def forget_password(
+    request_data: IAuthForgetPassword,
+    redis_client: Redis = Depends(deps.get_redis_client),
+):
     """
     This endpoint sends a verification email containing a one-time password to the provided email address.
 
@@ -312,7 +316,16 @@ async def forget_password(request_data: IAuthForgetPassword):
     if not current_user:
         raise EmailNotFoundException(email=email)
 
+    otp_code = security.create_otp_code(length=6)
+    await delete_otps(redis_client, current_user)
+    await add_otp_to_redis(
+        redis_client,
+        current_user,
+        otp_code,
+        settings.OTP_EXPIRE_MINUTES,
+    )
+
     # Send the verification email containing the OTP code
-    send_verification_email.delay(email_to=email, otp_code=113377)
+    send_verification_email.delay(email_to=email, otp_code=otp_code)
 
     return create_response(data={}, message="OTP code sent to e-mail")

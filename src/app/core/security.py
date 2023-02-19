@@ -1,3 +1,4 @@
+import random
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -37,3 +38,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
+
+def create_otp_code(length: int) -> str:
+    otp = ""
+    for _ in range(length):
+        otp += str(random.randint(0, 9))
+    return otp

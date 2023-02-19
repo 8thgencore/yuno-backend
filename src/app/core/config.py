@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 30  # 30 days
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 180  # 180 days
 
+    OTP_EXPIRE_MINUTES: int = 5  # 5 minutes
+
     # --------------------------------------------------
     # > Postgres
     # --------------------------------------------------
