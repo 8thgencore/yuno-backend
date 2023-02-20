@@ -24,10 +24,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
 
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 30  # 30 days
-    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 180  # 180 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 1  # 1 hour
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 90  # 90 days
 
     OTP_EXPIRE_MINUTES: int = 5  # 5 minutes
+    RESET_TOKEN_EXPITE_MINUTES: int = 30  # 30 minutes
 
     # --------------------------------------------------
     # > Postgres

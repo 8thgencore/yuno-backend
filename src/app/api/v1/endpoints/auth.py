@@ -3,6 +3,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt
+from loguru import logger
 from pydantic import ValidationError
 from redis.asyncio import Redis
 
@@ -16,15 +17,17 @@ from app.schemas.auth_schema import (
     IAuthChangePassword,
     IAuthForgetPassword,
     IAuthLogin,
+    IAuthOtpCode,
     IAuthRegister,
+    IAuthResetPassword,
 )
 from app.schemas.common_schema import IMetaGeneral, TokenType
 from app.schemas.response_schema import IPostResponseBase, create_response
-from app.schemas.token_schema import RefreshToken, Token, TokenRead
+from app.schemas.token_schema import RefreshToken, ResetToken, Token, TokenRead
 from app.schemas.user_schema import IUserCreate, IUserRead
 from app.tasks import send_verification_email
 from app.utils.exceptions import EmailNotFoundException
-from app.utils.otp import add_otp_to_redis, delete_otps
+from app.utils.otp import add_otp_to_redis, delete_otps, get_valid_otp
 from app.utils.token import add_token_to_redis, delete_tokens, get_valid_tokens
 
 router = APIRouter()
@@ -232,7 +235,7 @@ async def change_password(
     This endpoint allows the user to change their password.
 
     Args:
-      - `IAuthChangePassword`: The request body, which should include the user's current and new passwords.
+      - `IAuthChangePassword`: The request body, which include the user's current and new passwords.
 
     Returns:
       - `Token`: A response containing the new access token, refresh token, and user information.
@@ -296,9 +299,9 @@ async def change_password(
 
 @router.post("/forget-password", status_code=202)
 async def forget_password(
-    request_data: IAuthForgetPassword,
+    body: IAuthForgetPassword,
     redis_client: Redis = Depends(deps.get_redis_client),
-):
+) -> IPostResponseBase:
     """
     This endpoint sends a verification email containing a one-time password to the provided email address.
 
@@ -306,21 +309,21 @@ async def forget_password(
       - `IAuthForgetPassword`: The request body, which should include an email address.
 
     Returns:
-      - `dict`: A dictionary containing a success message indicating that the OTP code has been sent to the email address.
+      - `dict`: A dictionary  indicating that the OTP code has been success sent to the email address.
 
     Raises:
       - `HTTPException`: If the provided email address is not associated with an existing user.
     """
-    email = request_data.email
-    current_user = await crud.user.get_by_email(email=email)
-    if not current_user:
+    email = body.email
+    user = await crud.user.get_by_email(email=email)
+    if not user:
         raise EmailNotFoundException(email=email)
 
     otp_code = security.create_otp_code(length=6)
-    await delete_otps(redis_client, current_user)
+    await delete_otps(redis_client, user)
     await add_otp_to_redis(
         redis_client,
-        current_user,
+        user,
         otp_code,
         settings.OTP_EXPIRE_MINUTES,
     )
@@ -329,3 +332,108 @@ async def forget_password(
     send_verification_email.delay(email_to=email, otp_code=otp_code)
 
     return create_response(data={}, message="OTP code sent to e-mail")
+
+
+@router.post("/otp", status_code=202)
+async def send_otp_code(
+    body: IAuthOtpCode,
+    redis_client: Redis = Depends(deps.get_redis_client),
+) -> IPostResponseBase[ResetToken]:
+    """
+    Endpoint to send an OTP code to the user's email.
+
+    Args:
+      - `IAuthOtpCode`: The request body, which include an otp code.
+
+    Returns:
+      - `ResetToken`: A response containing the reset password token.
+
+    Raises:
+      - `HTTPException`: If the user entered an invalid otp code.
+    """
+    email = body.email
+    user = await crud.user.get_by_email(email=email)
+    if not user:
+        raise EmailNotFoundException(email=email)
+
+    otp_set = await get_valid_otp(redis_client, user.id)
+
+    if body.otp not in otp_set:
+        logger.warning(f"The user '{email}' entered an invalid otp code")
+        raise HTTPException(
+            status_code=400,
+            detail="The OTP code is not correct",
+        )
+
+    else:
+        logger.info(f"The user '{email}' has successfully entered the OTP code")
+
+        # Create new reset token
+        reset_token_expires = timedelta(minutes=settings.RESET_TOKEN_EXPITE_MINUTES)
+        reset_token = security.create_reset_token(user.id, expires_delta=reset_token_expires)
+
+        # Delete any existing reset tokens for the user
+        await delete_tokens(redis_client, user, TokenType.RESET)
+
+        # Add the new reset token to Redis
+        await add_token_to_redis(
+            redis_client,
+            user,
+            reset_token,
+            TokenType.RESET,
+            settings.RESET_TOKEN_EXPITE_MINUTES,
+        )
+
+        data = ResetToken(reset_token=reset_token)
+
+        return create_response(data=data, message="The OTP code is correct")
+
+
+@router.post("/reset-password")
+async def reset_password(
+    body: IAuthResetPassword,
+    redis_client: Redis = Depends(deps.get_redis_client),
+) -> IPostResponseBase[IUserRead]:
+    """
+    Endpoint allows the user to reset password
+
+    Args:
+      - `IAuthResetPassword`: The request body, which include the user's reset token and new passwords.
+
+    Returns:
+      - `Token`: A response containing the new access token, refresh token, and user information.
+
+    Raises:
+      - `HTTPException`: If the current password is invalid or if the new password is the same as the current password.
+    """
+    try:
+        payload = jwt.decode(
+            body.reset_token,
+            settings.SECRET_KEY,
+            algorithms=[security.ALGORITHM],
+        )
+    except (jwt.JWTError, ValidationError):
+        raise HTTPException(status_code=403, detail="Reset token invalid")
+
+    if payload["type"] == "reset":
+        user_id = payload["sub"]
+
+        # Get the valid reset tokens from Redis
+        valid_reset_tokens = await get_valid_tokens(redis_client, user_id, TokenType.RESET)
+
+        if not valid_reset_tokens or body.reset_token not in valid_reset_tokens:
+            raise HTTPException(status_code=403, detail="Reset token invalid")
+
+        user = await crud.user.get(id=user_id)
+
+        if user.is_active:
+            # Set the user's new password in the database
+            hashed_password = get_password_hash(body.password)
+            await crud.user.update(obj_current=user, obj_new={"hashed_password": hashed_password})
+            logger.info(f"User {user.email} set new password successfully")
+
+            return create_response(data=user, message="New password was set successfully")
+        else:
+            raise HTTPException(status_code=404, detail="User inactive")
+    else:
+        raise HTTPException(status_code=404, detail="Incorrect token")
