@@ -32,7 +32,7 @@ from app.utils.exceptions.project_exception import UserAlredyMemberProject
 router = APIRouter()
 
 
-@router.get("/my")
+@router.get("/me")
 async def get_my_projects(
     params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),

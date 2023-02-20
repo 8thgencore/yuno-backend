@@ -19,8 +19,8 @@ class IAuthRegister(BaseModel):
 class IAuthChangePassword(BaseModel):
     """ChangePassword Input Schema"""
 
-    current: str = Field(description="Current password of a user")
-    new: str = Field(description="New password of a user")
+    current_password: str = Field(description="Current password of a user")
+    new_password: str = Field(description="New password of a user")
 
 
 class IAuthForgetPassword(BaseModel):
