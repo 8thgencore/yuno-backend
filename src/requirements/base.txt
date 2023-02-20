@@ -5,13 +5,13 @@ gunicorn==20.1.0
 # db
 sqlmodel==0.0.8
 asyncpg==0.27.0
-alembic==1.9.3
-pydantic[email]==1.10.4
+alembic==1.9.4
+pydantic[email]==1.10.5
 sqlalchemy-utils==0.40.0
 redis==4.5.1
 fastapi-async-sqlalchemy==0.3.12
 fastapi-pagination==0.11.4
-fastapi-cache2[redis]==0.2.0
+fastapi-cache2[redis]==0.2.1
 
 # utils
 loguru==0.6.0
