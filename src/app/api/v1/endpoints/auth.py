@@ -297,8 +297,8 @@ async def change_password(
     return create_response(data=data, message="New password generated")
 
 
-@router.post("/forget-password", status_code=202)
-async def forget_password(
+@router.post("/forgot-password", status_code=202)
+async def forgot_password(
     body: IAuthForgetPassword,
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> IPostResponseBase:
