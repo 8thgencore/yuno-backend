@@ -299,14 +299,14 @@ async def change_password(
 
 @router.post("/forgot-password", status_code=202)
 async def forgot_password(
-    body: IAuthForgetPassword,
+    body: IAuthForgotPassword,
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> IPostResponseBase:
     """
     This endpoint sends a verification email containing a one-time password to the provided email address.
 
     Args:
-      - `IAuthForgetPassword`: The request body, which should include an email address.
+      - `IAuthForgotPassword`: The request body, which should include an email address.
 
     Returns:
       - `dict`: A dictionary  indicating that the OTP code has been success sent to the email address.

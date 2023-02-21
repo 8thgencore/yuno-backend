@@ -23,8 +23,8 @@ class IAuthChangePassword(BaseModel):
     new_password: str = Field(description="New password of a user")
 
 
-class IAuthForgetPassword(BaseModel):
-    """ForgetPassword Input Schema"""
+class IAuthForgotPassword(BaseModel):
+    """ForgotPassword Input Schema"""
 
     email: str = Field(description="Email address of a user")
 
