@@ -1,0 +1,16 @@
+version: 2
+
+updates:
+  # Maintain dependencies for docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+  # Maintain dependencies for python with pip
+  - package-ecosystem: "pip"
+    directory: "/src/requirements/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
