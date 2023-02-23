@@ -23,6 +23,6 @@ class EmailNotFoundException(HTTPException):
     ) -> None:
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Unable to find the user with an e-mail: {email}.",
+            detail=f"Unable to find the user with an e-mail: {email}.",
             headers=headers,
         )

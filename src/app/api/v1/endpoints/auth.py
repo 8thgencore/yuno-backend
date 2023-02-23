@@ -15,7 +15,7 @@ from app.core.security import get_password_hash, verify_password
 from app.models.user_model import User
 from app.schemas.auth_schema import (
     IAuthChangePassword,
-    IAuthForgetPassword,
+    IAuthForgotPassword,
     IAuthLogin,
     IAuthOtpCode,
     IAuthRegister,
