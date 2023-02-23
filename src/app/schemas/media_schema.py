@@ -5,7 +5,7 @@ from pydantic import validator
 
 from app import api
 from app.core.config import settings
-from app.models.media_model import ImageMediaBase, MediaBase
+from app.models.media_model import MediaBase
 from app.utils.minio_client import MinioClient
 from app.utils.partial import optional
 
@@ -35,18 +35,3 @@ class IMediaRead(MediaBase):
             bucket_name=settings.MINIO_BUCKET, object_name=values["path"]
         )
         return url
-
-
-# Image Media
-class IImageMediaCreate(ImageMediaBase):
-    pass
-
-
-# All these fields are optional
-@optional
-class IImageMediaUpdate(ImageMediaBase):
-    pass
-
-
-class IImageMediaRead(ImageMediaBase):
-    media: Optional[IMediaRead]
