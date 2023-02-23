@@ -12,6 +12,7 @@ from app.api import deps
 from app.core import security
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
+from app.deps import user_deps
 from app.models.user_model import User
 from app.schemas.auth_schema import (
     IAuthChangePassword,
@@ -106,7 +107,7 @@ async def register(
     Raises:
       - `HTTPException`: If the user already exists.
     """
-    register_user = await deps.user_exists(user=register_user)
+    register_user = await user_deps.user_exists(user=register_user)
     new_user = IUserCreate(
         first_name="",
         last_name="",

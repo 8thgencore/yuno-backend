@@ -1,7 +1,7 @@
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import validator
+from pydantic import AnyHttpUrl, validator
 
 from app import api
 from app.core.config import settings
@@ -27,7 +27,7 @@ class IMediaRead(MediaBase):
     @validator(
         "link", pre=True, check_fields=False, always=True
     )  # Always true because link does not exist in the database
-    def default_icon(cls, value: Any, values: Any) -> str:
+    def default_icon(cls, value: Any, values: Any) -> AnyHttpUrl:
         if values["path"] is None:
             return ""
         minio: MinioClient = api.deps.minio_auth()

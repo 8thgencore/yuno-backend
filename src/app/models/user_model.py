@@ -6,8 +6,8 @@ from pydantic import EmailStr
 from sqlmodel import Column, DateTime, Field, Relationship, SQLModel
 
 from app.models.base_uuid_model import BaseUUIDModel
+from app.models.image_media_model import ImageMedia
 from app.models.links_model import ProjectUserLink
-from app.models.media_model import ImageMedia
 
 
 class UserBase(SQLModel):

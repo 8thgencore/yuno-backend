@@ -7,7 +7,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.security import get_password_hash, verify_password
 from app.crud.base_crud import CRUDBase
-from app.models.media_model import ImageMedia, Media
+from app.models.image_media_model import ImageMedia
+from app.models.media_model import Media
 from app.models.user_model import User
 from app.schemas.media_schema import IMediaCreate
 from app.schemas.user_schema import IUserCreate, IUserUpdate

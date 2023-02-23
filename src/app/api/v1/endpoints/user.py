@@ -1,13 +1,13 @@
 import os
 from io import BytesIO
 from typing import Optional
-from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, File, Query, Response, UploadFile, status
 from fastapi_pagination import Params
 
 from app import crud
 from app.api import deps
+from app.deps import user_deps
 from app.models import User
 from app.models.role_model import Role
 from app.schemas.common_schema import IOrderEnum
@@ -75,74 +75,79 @@ async def get_user_list_order_by_created_at(
 
 @router.get("/{user_id}")
 async def get_user_by_id(
-    user_id: UUID,
+    user: User = Depends(user_deps.is_valid_user),  # user_id
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponseBase[IUserRead]:
     """
     Gets a user by his/her id
     """
-    if user := await crud.user.get(id=user_id):
-        return create_response(data=user)
-    else:
-        raise IdNotFoundException(User, id=user_id)
-
-
-@router.post("", status_code=status.HTTP_201_CREATED)
-async def create_user(
-    new_user: IUserCreate = Depends(deps.user_exists),
-    current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
-) -> IPostResponseBase[IUserRead]:
-    """
-    Creates a new user
-    """
-    role = await crud.role.get(id=new_user.role_id)
-    if not role:
-        raise IdNotFoundException(Role, id=new_user.role_id)
-
-    user = await crud.user.create_with_role(obj_in=new_user)
     return create_response(data=user)
 
 
-@router.put("/{user_id}")
-async def update_user_by_id(
-    user_id: UUID,
+@router.put("/me")
+async def update_self_user(
     user: IUserUpdate,
     current_user: User = Depends(deps.get_current_user()),
 ) -> IPutResponseBase[IUserRead]:
     """
-    Update a user by his/her id
+    Update self user parameter
     """
-    current_user = await crud.user.get(id=user_id)
-
-    if not current_user:
-        raise IdNotFoundException(User, id=user_id)
-
     if current_user.email != user.email:
-        await deps.email_exists(user=user)
+        await user_deps.email_exists(user=user)
     if current_user.username != user.username:
-        await deps.username_exists(user=user)
+        await user_deps.username_exists(user=user)
 
     user_updated = await crud.user.update(obj_new=user, obj_current=current_user)
     return create_response(data=user_updated)
 
 
+@router.post("", status_code=status.HTTP_201_CREATED)
+async def create_user(
+    user: IUserCreate = Depends(user_deps.user_exists),
+    current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
+) -> IPostResponseBase[IUserRead]:
+    """
+    Creates a new user
+    """
+    role = await crud.role.get(id=user.role_id)
+    if not role:
+        raise IdNotFoundException(Role, id=user.role_id)
+
+    user = await crud.user.create_with_role(obj_in=user)
+    return create_response(data=user)
+
+
+@router.put("/{user_id}")
+async def update_user_by_id(
+    user: IUserUpdate,
+    updated_user: User = Depends(user_deps.is_valid_user),  # user_id
+    current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
+) -> IPutResponseBase[IUserRead]:
+    """
+    Update a user by his/her id
+    """
+    if updated_user.email != user.email:
+        await user_deps.email_exists(user=user)
+    if updated_user.username != user.username:
+        await user_deps.username_exists(user=user)
+
+    user_updated = await crud.user.update(obj_new=user, obj_current=updated_user)
+    return create_response(data=user_updated)
+
+
 @router.delete("/{user_id}")
 async def remove_user_by_id(
-    user_id: UUID,
+    user: User = Depends(user_deps.is_valid_user),  # user_id
     current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
 ) -> IDeleteResponseBase[IUserRead]:
     """
     Delete a user by his/her id
     """
-    user = await crud.user.get(id=user_id)
-    if not user:
-        raise IdNotFoundException(User, id=user_id)
-
-    if current_user.id == user_id:
+    if current_user.id == user.id:
         raise UserSelfDeleteException()
 
-    user = await crud.user.remove(id=user_id)
-    return create_response(data=user)
+    user = await crud.user.remove(id=user.id)
+    return create_response(data=user, message="User removed")
 
 
 @router.post("/image")
@@ -189,11 +194,11 @@ async def upload_my_image(
 
 @router.post("/{user_id}/image")
 async def upload_user_image(
-    user: User = Depends(deps.is_valid_user),
+    user: User = Depends(user_deps.is_valid_user),  # user_id
     title: Optional[str] = Body(None),
     description: Optional[str] = Body(None),
     image_file: UploadFile = File(...),
-    current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
+    current_user: User = Depends(deps.get_current_user()),
     minio_client: MinioClient = Depends(deps.minio_auth),
 ) -> IPostResponseBase[IUserRead]:
     """

@@ -1,6 +1,7 @@
 from typing import Optional
 
-from app.models.media_model import ImageMediaBase, IMediaRead
+from app.models.image_media_model import ImageMediaBase
+from app.schemas.media_schema import IMediaRead
 from app.utils.partial import optional
 
 

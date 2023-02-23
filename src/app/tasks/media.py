@@ -7,7 +7,8 @@ from sqlmodel import select
 
 from app.api import deps
 from app.db.session import SessionLocal
-from app.models.media_model import ImageMedia, Media
+from app.models.image_media_model import ImageMedia
+from app.models.media_model import Media
 from app.models.user_model import User
 from app.schemas.media_schema import IMediaCreate
 from app.utils.resize_image import modify_image_resized
