@@ -41,6 +41,39 @@ async def get_my_data(
     return create_response(data=current_user)
 
 
+@router.put("")
+async def update_my_data(
+    user: IUserUpdate,
+    current_user: User = Depends(deps.get_current_user()),
+) -> IPutResponseBase[IUserRead]:
+    """
+    Update my user profile information
+    """
+    if current_user.email != user.email:
+        await user_deps.email_exists(user=user)
+    if current_user.username != user.username:
+        await user_deps.username_exists(user=user)
+
+    user_updated = await crud.user.update(obj_new=user, obj_current=current_user)
+    return create_response(data=user_updated)
+
+
+@router.post("", status_code=status.HTTP_201_CREATED)
+async def create_user(
+    user: IUserCreate = Depends(user_deps.user_exists),
+    current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
+) -> IPostResponseBase[IUserRead]:
+    """
+    Creates a new user
+    """
+    role = await crud.role.get(id=user.role_id)
+    if not role:
+        raise IdNotFoundException(Role, id=user.role_id)
+
+    user = await crud.user.create_with_role(obj_in=user)
+    return create_response(data=user)
+
+
 @router.get("/list")
 async def read_users_list(
     params: Params = Depends(),
@@ -81,39 +114,6 @@ async def get_user_by_id(
     """
     Gets a user by his/her id
     """
-    return create_response(data=user)
-
-
-@router.put("/me")
-async def update_self_user(
-    user: IUserUpdate,
-    current_user: User = Depends(deps.get_current_user()),
-) -> IPutResponseBase[IUserRead]:
-    """
-    Update self user parameter
-    """
-    if current_user.email != user.email:
-        await user_deps.email_exists(user=user)
-    if current_user.username != user.username:
-        await user_deps.username_exists(user=user)
-
-    user_updated = await crud.user.update(obj_new=user, obj_current=current_user)
-    return create_response(data=user_updated)
-
-
-@router.post("", status_code=status.HTTP_201_CREATED)
-async def create_user(
-    user: IUserCreate = Depends(user_deps.user_exists),
-    current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
-) -> IPostResponseBase[IUserRead]:
-    """
-    Creates a new user
-    """
-    role = await crud.role.get(id=user.role_id)
-    if not role:
-        raise IdNotFoundException(Role, id=user.role_id)
-
-    user = await crud.user.create_with_role(obj_in=user)
     return create_response(data=user)
 
 
