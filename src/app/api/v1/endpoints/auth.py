@@ -88,6 +88,8 @@ async def login(
             settings.REFRESH_TOKEN_EXPIRE_MINUTES,
         )
 
+    logger.info(f"User '{user.email}' successful loggined")
+
     return create_response(meta=meta_data, data=data, message="Login correctly")
 
 
@@ -125,6 +127,8 @@ async def register(
         new_user.role_id = role.id
 
     user = await crud.user.create_with_role(obj_in=new_user)
+    logger.info(f"User '{user.email}' registered")
+
     return create_response(data=user)
 
 
@@ -295,6 +299,8 @@ async def change_password(
         settings.REFRESH_TOKEN_EXPIRE_MINUTES,
     )
 
+    logger.info(f"User '{current_user.email}' changed password")
+
     return create_response(data=data, message="New password generated")
 
 
@@ -431,7 +437,7 @@ async def reset_password(
             # Set the user's new password in the database
             hashed_password = get_password_hash(body.password)
             await crud.user.update(obj_current=user, obj_new={"hashed_password": hashed_password})
-            logger.info(f"User {user.email} set new password successfully")
+            logger.info(f"User '{user.email}' set new password successfully")
 
             return create_response(data=user, message="New password was set successfully")
         else:

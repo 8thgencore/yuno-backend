@@ -47,7 +47,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
             )
             .where(Task.project_id.in_(projects))
             .join(Project, Project.id == Task.project_id)
-            .order_by(Task.deadline)
+            .order_by(Task.created_at)
         )
         tasks = await super().get_multi_paginated(query=query)
 
@@ -76,7 +76,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
             .where(Task.project_id.in_(projects))
             .where(Task.done == False)  # noqa
             .join(Project, Project.id == Task.project_id)
-            .order_by(Task.deadline)
+            .order_by(Task.created_at)
         )
         tasks = await super().get_multi_paginated(query=query)
 

@@ -2,6 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 from fastapi_pagination import Params
+from loguru import logger
 
 from app import crud
 from app.api import deps
@@ -65,6 +66,8 @@ async def create_project(
     Creates a new project
     """
     project = await crud.project.create(obj_in=new_project, user=current_user)
+    logger.info(f"User '{current_user.id}' created new project: '{project.id}'")
+
     return create_response(data=project)
 
 
@@ -99,6 +102,8 @@ async def update_project_by_id(
         raise UserNotMemberProject()
 
     project_updated = await crud.project.update(obj_new=project, obj_current=current_project)
+    logger.info(f"User '{current_user.id}' updated project: '{project_id}'")
+
     return create_response(data=project_updated)
 
 
@@ -118,6 +123,8 @@ async def remove_project_by_id(
         raise UserNotCreatorProject()
 
     project = await crud.project.remove(id=project_id)
+    logger.info(f"User '{current_user.id}' deleted project: '{project_id}'")
+
     return create_response(data=project)
 
 
@@ -137,6 +144,8 @@ async def join_to_project_by_id(
         raise UserAlredyMemberProject()
 
     project = await crud.project.join_the_project(user=current_user, project=current_project)
+    logger.info(f"User '{current_user.id}' join a project: '{project_id}'")
+
     return create_response(data=project)
 
 
@@ -156,6 +165,8 @@ async def leave_to_project_by_id(
         raise UserNotMemberProject()
 
     project = await crud.project.leave_the_project(user=current_user, project=current_project)
+    logger.info(f"User '{current_user.id}' leave a project: '{project_id}'")
+
     return create_response(data=project)
 
 

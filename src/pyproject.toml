@@ -6,27 +6,27 @@ authors = ["8thgencore <8th@example.com>"]
 
 [tool.black]
 line-length = 99
-target-version = [ "py38", "py39", "py310", "py311"]
+target-version = ["py38", "py39", "py310", "py311"]
 exclude = "((.eggs | .git | .pytest_cache | build | dist))"
 
 [tool.ruff]
 line-length = 99
 exclude = [".git", "__pycache__", ".mypy_cache", ".pytest_cache"]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "C", # flake8-comprehensions
+    "B", # flake8-bugbear
 ]
-ignore = [    
+ignore = [
     "B904",
-    "B006",    
-    "E501",  # line too long, handled by black
-    "E712",  # in sqlmodel better used ==
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
+    "B006",
+    "E501", # line too long, handled by black
+    "E712", # in sqlmodel better used ==
+    "B008", # do not perform function calls in argument defaults
+    "C901", # too complex
 ]
 
 [tool.ruff.per-file-ignores]
@@ -35,13 +35,13 @@ ignore = [
 [tool.poetry.dependencies]
 python = "^3.11"
 # FastApi and Extencions
-fastapi = {extras = ["all"], version = "^0.92.0"}
+fastapi = { extras = ["all"], version = "^0.92.0" }
 alembic = "^1.9.4"
 asyncpg = "^0.27.0"
 sqlmodel = "^0.0.8"
 fastapi-async-sqlalchemy = "^0.3.12"
-fastapi-cache2 = {extras = ["redis"], version = "^0.2.1"}
-fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.11.4"}
+fastapi-cache2 = { extras = ["redis"], version = "^0.2.1" }
+fastapi-pagination = { extras = ["sqlalchemy"], version = "^0.11.4" }
 python-multipart = "^0.0.6"
 # For s3
 minio = "^7.1.13"
@@ -56,8 +56,8 @@ fastapi-mail = "^1.2.6"
 # Logger
 loguru = "^0.6.0"
 # Cryptography
-python-jose = {extras = ["cryptography"], version = "^3.3.0"}
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = { extras = ["cryptography"], version = "^3.3.0" }
+passlib = { extras = ["bcrypt"], version = "^1.7.4" }
 
 [tool.poetry.dev-dependencies]
 mypy = "^1.0.1"

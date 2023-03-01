@@ -2,6 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 from fastapi_pagination import Params
+from loguru import logger
 
 from app import crud
 from app.api import deps
@@ -80,26 +81,28 @@ async def get_tasks_list_by_deadline(
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_task(
-    task: ITaskCreate,
+    new_task: ITaskCreate,
     current_user: User = Depends(deps.get_current_user()),
 ) -> IPostResponseBase[ITaskRead]:
     """
     Endpoint to create a new task.
 
     Args:
-      - task: Task data to be created.
+        task: Task data to be created.
 
     Returns:
         The created task data.
     """
-    if task.project_id:
-        await check_user_member_project(user_id=current_user.id, project_id=task.project_id)
+    if new_task.project_id:
+        await check_user_member_project(user_id=current_user.id, project_id=new_task.project_id)
 
     # Calculate percent completed task in project
-    calculate_percent_completed_task.delay(task.project_id)
+    calculate_percent_completed_task.delay(new_task.project_id)
 
-    new_task = await crud.task.create(obj_in=task, user=current_user)
-    return create_response(data=new_task)
+    task = await crud.task.create(obj_in=new_task, user=current_user)
+    logger.info(f"User '{current_user.id}' created new task: '{task.id}'")
+
+    return create_response(data=task)
 
 
 @router.get("/{task_id}")
@@ -148,6 +151,7 @@ async def update_task_by_id(
         )
 
     task_updated = await crud.task.update(obj_new=task, obj_current=current_task)
+    logger.info(f"User '{current_user.id}' updated task: '{task_id}'")
 
     # Calculate percent completed task in project
     calculate_percent_completed_task.delay(current_task.project_id)
@@ -176,6 +180,7 @@ async def remove_task_by_id(
     await check_user_member_project(user_id=current_user.id, project_id=current_task.project_id)
 
     task = await crud.task.remove(id=task_id)
+    logger.info(f"User '{current_user.id}' deleted task: '{task_id}'")
 
     # Calculate percent completed task in project
     calculate_percent_completed_task.delay(current_task.project_id)

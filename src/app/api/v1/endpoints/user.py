@@ -4,6 +4,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, File, Query, Response, UploadFile, status
 from fastapi_pagination import Params
+from loguru import logger
 
 from app import crud
 from app.api import deps
@@ -55,6 +56,8 @@ async def update_my_data(
         await user_deps.username_exists(user=user)
 
     user_updated = await crud.user.update(obj_new=user, obj_current=current_user)
+    logger.info(f"User '{current_user.id}' updated profile information")
+
     return create_response(data=user_updated)
 
 
@@ -183,6 +186,7 @@ async def upload_my_image(
             width=image_modified.width,
             file_format=image_modified.file_format,
         )
+        logger.info(f"User '{current_user.id}' updated profile image")
 
         generate_avatar_thumbnail.delay(current_user.id, data_file.file_name)
 
