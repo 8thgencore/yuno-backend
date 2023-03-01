@@ -3,7 +3,7 @@ from uuid import UUID
 
 from app.models.project_model import ProjectBase
 from app.schemas.task_schema import ITaskRead
-from app.schemas.user_schema import IUserRead
+from app.schemas.user_schema import IUserRead, IUserWithoutImage
 from app.utils.partial import optional
 
 
@@ -24,7 +24,7 @@ class IProjectRead(ProjectBase):
 class IProjectWithUsers(ProjectBase):
     id: UUID
     created_by_id: UUID
-    users: Optional[List[IUserRead]] = []
+    users: Optional[List[IUserWithoutImage]] = []
 
 
 class IProjectWithUsersTasks(ProjectBase):

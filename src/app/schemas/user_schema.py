@@ -28,24 +28,14 @@ class IUserRead(UserBase):
     image: Optional[IImageMediaRead] = Field(..., repr=True)
 
 
+class IUserWithoutImage(UserBase):
+    id: UUID
+
+
 class IUserReadWithRole(UserBase):
     id: UUID
     role: Optional[IRoleRead] = None
     image: Optional[IImageMediaRead] = Field(..., repr=True)
-
-    # image_url: Optional[str]
-    # @validator("image_url", pre=True, check_fields=False, always=True)
-    # # Always true because link does not exist in the database
-    # def get_image_url(cls, value: Any, values: Any) -> str:
-    #     if "image" in values:
-    #         if values["image"] is None:
-    #             return ""
-
-    #         url = values["image"].media.link
-    #         return url
-
-    # class Config:
-    #     fields = {"image": {"exclude": True}}
 
 
 class IUserStatus(str, Enum):
