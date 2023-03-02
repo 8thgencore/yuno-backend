@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi_async_sqlalchemy import db
 from sqlmodel import and_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -15,7 +14,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
     async def create(
         self, *, obj_in: ITaskCreate, user: User, db_session: Optional[AsyncSession] = None
     ) -> Task:
-        db_session = db_session or db.session
+        db_session = db_session or super().get_db().session
 
         db_obj = Task.from_orm(obj_in)
         db_obj.created_by_id = user.id
@@ -28,7 +27,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
     async def get_by_user(
         self, *, user: User, db_session: Optional[AsyncSession] = None
     ) -> List[ITaskWithProjectName]:
-        db_session = db_session or db.session
+        db_session = db_session or super().get_db().session
 
         # get user projects
         query = select(Project.id).where(Project.users.contains(user))
@@ -56,7 +55,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
     async def get_not_completed_by_user(
         self, *, user: User, db_session: Optional[AsyncSession] = None
     ) -> List[ITaskWithProjectName]:
-        db_session = db_session or db.session
+        db_session = db_session or super().get_db().session
 
         # get user projects
         query = select(Project.id).where(Project.users.contains(user))
@@ -85,7 +84,7 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
     async def get_by_deadline(
         self, *, user: User, date: UTCDatetime, db_session: Optional[AsyncSession] = None
     ) -> List[ITaskWithProjectName]:
-        db_session = db_session or db.session
+        db_session = db_session or super().get_db().session
 
         # get user projects
         query = select(Project.id).where(Project.users.contains(user))

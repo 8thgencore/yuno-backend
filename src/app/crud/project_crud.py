@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-from fastapi_async_sqlalchemy import db
 from fastapi_pagination import Params
 from sqlalchemy.orm import selectinload
 from sqlmodel import and_, select
@@ -21,7 +20,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
     async def create(
         self, *, obj_in: IProjectCreate, user: User, db_session: Optional[AsyncSession] = None
     ) -> Project:
-        db_session = db_session or db.session
+        db_session = db_session or super().get_db().session
 
         db_obj = Project.from_orm(obj_in)
         db_obj.created_by_id = user.id
@@ -45,7 +44,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         user: User,
         db_session: Optional[AsyncSession] = None,
     ) -> List[IProjectWithUsers]:
-        db_session = db_session or db.session
+        db_session = db_session or super().get_db().session
 
         query = (
             select(Project)
@@ -56,10 +55,10 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return projects
 
     async def remove(self, *, id: str, db_session: Optional[AsyncSession] = None) -> Project:
-        db_session = db_session or db.session
+        db_session = db_session or super().get_db().session
 
         # delete links
-        response = await db.session.execute(
+        response = await db_session.execute(
             select(ProjectUserLink).where(ProjectUserLink.project_id == id)
         )
         obj = response.scalars().all()
@@ -67,13 +66,13 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
             await db_session.delete(ob)
 
         # delete all task project
-        response = await db.session.execute(select(Task).where(Task.project_id == id))
+        response = await db_session.execute(select(Task).where(Task.project_id == id))
         obj = response.scalars().all()
         for ob in obj:
             await db_session.delete(ob)
 
         # delete project
-        response = await db.session.execute(select(Project).where(Project.id == id))
+        response = await db_session.execute(select(Project).where(Project.id == id))
         obj = response.scalar_one()
         await db_session.delete(obj)
 
@@ -83,7 +82,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
     async def is_member_project(
         self, *, user_id: str, project_id: str, db_session: Optional[AsyncSession] = None
     ) -> bool:
-        db_session = db_session or db.session
+        db_session = db_session or db_session
 
         query = select(ProjectUserLink).where(
             and_(
@@ -99,7 +98,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
     async def join_the_project(
         self, *, user: User, project: Project, db_session: Optional[AsyncSession] = None
     ) -> Project:
-        db_session = db_session or db.session
+        db_session = db_session or super().get_db().session
 
         project_user_link = ProjectUserLink(
             user_id=user.id,
@@ -107,13 +106,13 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         )
         db_session.add(project_user_link)
         await db_session.commit()
-        await db.session.refresh(project)
+        await db_session.refresh(project)
         return project
 
     async def leave_the_project(
         self, *, user: User, project: Project, db_session: Optional[AsyncSession] = None
     ) -> Project:
-        db_session = db_session or db.session
+        db_session = db_session or super().get_db().session
 
         response = await db_session.execute(
             select(ProjectUserLink).where(
@@ -126,14 +125,14 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         obj = response.scalar_one_or_none()
         if obj:
             await db_session.delete(obj)
-        await db.session.refresh(project)
+        await db_session.refresh(project)
         await db_session.commit()
         return project
 
     async def get_tasks(
         self, *, project_id: str, db_session: Optional[AsyncSession] = None
     ) -> List[ITaskRead]:
-        db_session = db_session or db.session
+        db_session = db_session or super().get_db().session
 
         query = select(Task).where(Task.project_id == project_id)
         tasks = await super().get_multi_paginated(query=query)
@@ -142,7 +141,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
     async def get_members(
         self, *, project: IProjectRead, db_session: Optional[AsyncSession] = None
     ) -> List[ITaskRead]:
-        db_session = db_session or db.session
+        db_session = db_session or super().get_db().session
 
         query = select(User).where(User.projects.contains(project))
         tasks = await super().get_multi_paginated(query=query)
