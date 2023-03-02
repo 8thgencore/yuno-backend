@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from fastapi_pagination import Params
 from sqlalchemy.orm import selectinload
-from sqlmodel import and_, select
+from sqlmodel import and_, func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.crud.base_crud import CRUDBase
@@ -13,6 +13,7 @@ from app.schemas.project_schema import (
     IProjectUpdate,
     IProjectWithUsers,
 )
+from app.schemas.statistics_schema import StatisticsRead
 from app.schemas.task_schema import ITaskRead
 
 
@@ -146,6 +147,30 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         query = select(User).where(User.projects.contains(project))
         tasks = await super().get_multi_paginated(query=query)
         return tasks
+
+    async def get_stats(self, *, db_session: Optional[AsyncSession] = None) -> List[ITaskRead]:
+        db_session = db_session or super().get_db().session
+
+        projects_count = await super().get_count()
+
+        result = await db_session.execute(
+            select(func.count(Project.id)).where(Project.percent_completed == 0)
+        )
+        missing_count = result.scalar()
+
+        result = await db_session.execute(
+            select(func.count(Project.id)).where(Project.percent_completed == 1)
+        )
+        complited_count = result.scalar()
+
+        stats = StatisticsRead(
+            projects_count=projects_count,
+            missing_count=missing_count,
+            complited_count=complited_count,
+            ongoing_count=projects_count - (missing_count + complited_count),
+        )
+
+        return stats
 
 
 project = CRUDProject(Project)

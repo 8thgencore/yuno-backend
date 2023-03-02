@@ -21,6 +21,7 @@ from app.schemas.response_schema import (
     IPostResponseBase,
     create_response,
 )
+from app.schemas.statistics_schema import StatisticsRead
 from app.schemas.task_schema import ITaskRead
 from app.schemas.user_schema import IUserRead
 from app.utils.exceptions import (
@@ -55,6 +56,17 @@ async def read_project_list(
     """
     projects = await crud.project.get_multi_paginated(params=params)
     return create_response(data=projects)
+
+
+@router.get("/stats")
+async def get_project_statistics(
+    current_user: User = Depends(deps.get_current_user()),
+) -> IGetResponseBase[StatisticsRead]:
+    """
+    Endpoint for getting a statistics of projects
+    """
+    stats = await crud.project.get_stats()
+    return create_response(data=stats)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
