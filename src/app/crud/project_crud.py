@@ -82,7 +82,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
     async def is_member_project(
         self, *, user_id: str, project_id: str, db_session: Optional[AsyncSession] = None
     ) -> bool:
-        db_session = db_session or db_session
+        db_session = db_session or super().get_db().session
 
         query = select(ProjectUserLink).where(
             and_(
