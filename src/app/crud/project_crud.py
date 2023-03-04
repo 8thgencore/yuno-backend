@@ -161,13 +161,13 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         result = await db_session.execute(
             select(func.count(Project.id)).where(Project.percent_completed == 1)
         )
-        complited_count = result.scalar()
+        completed_count = result.scalar()
 
         stats = StatisticsRead(
             projects_count=projects_count,
             missing_count=missing_count,
-            complited_count=complited_count,
-            ongoing_count=projects_count - (missing_count + complited_count),
+            completed_count=completed_count,
+            ongoing_count=projects_count - (missing_count + completed_count),
         )
 
         return stats
