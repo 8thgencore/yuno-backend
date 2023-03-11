@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yuno"
-version = "0.1.0"
+version = "0.2.0"
 description = "Task management backend service"
 authors = ["8thgencore <8th@example.com>"]
 
@@ -33,24 +33,26 @@ ignore = [
 "__init__.py" = ["F401"]
 
 [tool.poetry.dependencies]
+# Python version
 python = "^3.11"
 # FastApi and Extencions
-fastapi = { extras = ["all"], version = "^0.92.0" }
-alembic = "^1.9.4"
-asyncpg = "^0.27.0"
-sqlmodel = "^0.0.8"
-fastapi-async-sqlalchemy = "^0.3.12"
+fastapi = { extras = ["all"], version = "^0.94.0" }
 fastapi-cache2 = { extras = ["redis"], version = "^0.2.1" }
 fastapi-pagination = { extras = ["sqlalchemy"], version = "^0.11.4" }
+fastapi-async-sqlalchemy = "^0.3.12"
 python-multipart = "^0.0.6"
-# For s3
+# Database
+sqlmodel = "^0.0.8"
+alembic = "^1.10.2"
+asyncpg = "^0.27.0"
+# For S3
 minio = "^7.1.13"
 Pillow = "^9.4.0"
 # Celery
-watchfiles = "^0.18.1"
 redis = "^4.5.1"
 celery = "^5.2.7"
 flower = "^1.2.0"
+watchfiles = "^0.18.1"
 # Mail
 fastapi-mail = "^1.2.6"
 # Logger
@@ -60,12 +62,12 @@ python-jose = { extras = ["cryptography"], version = "^3.3.0" }
 passlib = { extras = ["bcrypt"], version = "^1.7.4" }
 
 [tool.poetry.dev-dependencies]
-mypy = "^1.0.1"
+mypy = "^1.1.1"
 yesqa = "^1.4.0"
 httpx = "^0.23.3"
-pytest = "^7.2.1"
+pytest = "^7.2.2"
 black = "^23.1.0"
-ruff = "^0.0.253"
+ruff = "^0.0.254"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
