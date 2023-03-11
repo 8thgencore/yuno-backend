@@ -17,12 +17,12 @@ class UUID(uuid.UUID):
 
     def __init__(
         self,
-        hex: str = None,
-        bytes: bytes = None,
-        bytes_le: bytes = None,
-        fields: Tuple[int, int, int, int, int, int] = None,
-        int: int = None,
-        version: int = None,
+        hex: str | None = None,
+        bytes: bytes | None = None,
+        bytes_le: bytes | None = None,
+        fields: Tuple[int, int, int, int, int, int] | None = None,
+        int: int | None = None,
+        version: int | None = None,
         *,
         is_safe=uuid.SafeUUID.unknown,
     ) -> None:
@@ -76,7 +76,7 @@ _last_v6_timestamp = None
 _last_v7_timestamp = None
 
 
-def uuid6(clock_seq: int = None) -> UUID:
+def uuid6(clock_seq: int | None = None) -> UUID:
     r"""UUID version 6 is a field-compatible version of UUIDv1, reordered for
     improved DB locality.  It is expected that UUIDv6 will primarily be
     used in contexts where there are existing v1 UUIDs.  Systems that do
