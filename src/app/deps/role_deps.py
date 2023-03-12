@@ -12,7 +12,7 @@ from app.utils.exceptions.common_exception import (
 
 async def get_role_by_name(
     role_name: str = Query(default="", description="String compare with name or last name")
-) -> str:
+) -> Role:
     role = await crud.role.get_role_by_name(name=role_name)
     if not role:
         raise NameNotFoundException(Role, name=role_name)

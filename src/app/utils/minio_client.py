@@ -1,6 +1,8 @@
 # https://github.com/Longdh57/fastapi-minio
 
 from datetime import timedelta
+from io import BytesIO
+from typing import Any
 
 from minio import Minio
 from pydantic import BaseModel
@@ -13,7 +15,7 @@ class IMinioResponse(BaseModel):
 
 
 class MinioClient:
-    def __init__(self, minio_url: str, access_key: str, secret_key: str, bucket_name: str):
+    def __init__(self, minio_url: str, access_key: str, secret_key: str, bucket_name: str) -> None:
         self.minio_url = minio_url
         self.access_key = access_key
         self.secret_key = secret_key
@@ -31,14 +33,14 @@ class MinioClient:
             self.client.make_bucket(self.bucket_name)
         return self.bucket_name
 
-    def presigned_get_object(self, bucket_name, object_name):
+    def presigned_get_object(self, bucket_name: str, object_name: str) -> Any:
         # Request URL expired after 7 days
         url = self.client.presigned_get_object(
             bucket_name=bucket_name, object_name=object_name, expires=timedelta(days=7)
         )
         return url
 
-    def check_file_name_exists(self, bucket_name, file_name):
+    def check_file_name_exists(self, bucket_name: str, file_name: str) -> bool:
         try:
             self.client.stat_object(bucket_name=bucket_name, object_name=file_name)
             return True
@@ -46,7 +48,9 @@ class MinioClient:
             print(f"[x] Exception: {e}")
             return False
 
-    def put_object(self, file_data, file_name, content_type):
+    def put_object(
+        self, file_data: BytesIO, file_name: str, content_type: str
+    ) -> IMinioResponse | Any:
         try:
             # object_name = f"{uuid7()}{file_name}"
             object_name = file_name
@@ -66,7 +70,7 @@ class MinioClient:
         except Exception as e:
             raise e
 
-    def get_object(self, file_name):
+    def get_object(self, file_name: str) -> Any:
         try:
             object = self.client.get_object(
                 bucket_name=self.bucket_name,

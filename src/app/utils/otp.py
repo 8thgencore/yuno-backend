@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Optional
+from typing import Optional, Set
 from uuid import UUID
 
 from redis.asyncio import Redis
@@ -20,7 +20,7 @@ async def add_otp_to_redis(
         await redis_client.expire(otp_key, timedelta(minutes=expire_time))
 
 
-async def get_valid_otp(redis_client: Redis, user_id: UUID):
+async def get_valid_otp(redis_client: Redis, user_id: UUID) -> Set:
     otp_key = f"user:{user_id}:otp"
     valid_otps = await redis_client.smembers(otp_key)
     return valid_otps
