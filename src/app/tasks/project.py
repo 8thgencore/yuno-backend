@@ -9,22 +9,21 @@ from app.models.task_model import Task
 
 
 @shared_task(name="calculate_percent_completed_task")
-def calculate_percent_completed_task(project_id: str):
-    async def main():
+def calculate_percent_completed_task(project_id: str) -> None:
+    async def main() -> None:
         async with SessionLocal() as db_session:
-            result = await db_session.execute(
-                select(func.count(Task.id)).where(Task.project_id == project_id)
-            )
+            query = select(func.count(Task.id)).where(Task.project_id == project_id)
+            result = await db_session.execute(query)
             task_all = result.scalar()
 
-            result = await db_session.execute(
-                select(func.count(Task.id)).where(
-                    and_(Task.project_id == project_id, Task.done == True)
-                )
+            query = select(func.count(Task.id)).where(
+                and_(Task.project_id == project_id, Task.done == True)
             )
+            result = await db_session.execute(query)
             task_complited = result.scalar()
 
-            result = await db_session.execute(select(Project).where(Project.id == project_id))
+            query = select(Project).where(Project.id == project_id)
+            result = await db_session.execute()
             project = result.scalar_one_or_none()
 
             if project:

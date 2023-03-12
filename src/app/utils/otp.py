@@ -12,7 +12,7 @@ async def add_otp_to_redis(
     user: User,
     otp_code: str,
     expire_time: Optional[int] = None,
-):
+) -> None:
     otp_key = f"user:{user.id}:otp"
     valid_otps = await get_valid_otp(redis_client, user.id)
     await redis_client.sadd(otp_key, otp_code)
@@ -26,7 +26,7 @@ async def get_valid_otp(redis_client: Redis, user_id: UUID):
     return valid_otps
 
 
-async def delete_otps(redis_client: Redis, user: User):
+async def delete_otps(redis_client: Redis, user: User) -> None:
     token_key = f"user:{user.id}:otp"
     valid_otps = await redis_client.smembers(token_key)
     if valid_otps is not None:

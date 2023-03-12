@@ -8,7 +8,7 @@ from app.core.config import settings
 
 
 @shared_task(name="send_verification_email")
-def send_verification_email(email_to: str, otp_code: int):
+def send_verification_email(email_to: str, otp_code: int) -> None:
     email_body = {
         "email": email_to,
         "otp_code": str(otp_code),
@@ -23,6 +23,6 @@ def send_verification_email(email_to: str, otp_code: int):
     fm = FastMail(settings.EMAIL_CONNECTION_CONFIG)
     try:
         asyncio.run(fm.send_message(message, template_name="verification_email.html"))
-        logger.info(f"Otp code has been successfully sent to e-mail: {email_to}")
+        logger.info(f"Otp code has been successfully sent to e-mail: '{email_to}'")
     except Exception as e:
-        logger.error(f"Not able to send email: {e}")
+        logger.error(f"Not able to send email: '{e}'")

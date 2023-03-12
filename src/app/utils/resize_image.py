@@ -12,7 +12,7 @@ class IModifiedImageResponse(BaseModel):
     file_data: Any
 
 
-def crop_center(pil_img, crop_width, crop_height):
+def crop_center(pil_img, crop_width, crop_height) -> Any:
     img_width, img_height = pil_img.size
     return pil_img.crop(
         (
@@ -24,11 +24,11 @@ def crop_center(pil_img, crop_width, crop_height):
     )
 
 
-def crop_max_square(pil_img):
+def crop_max_square(pil_img) -> Any:
     return crop_center(pil_img, min(pil_img.size), min(pil_img.size))
 
 
-def modify_image(image: BytesIO):
+def modify_image(image: BytesIO) -> IModifiedImageResponse:
     pil_image = Image.open(image)
     file_format = pil_image.format
 
@@ -45,7 +45,7 @@ def modify_image(image: BytesIO):
     )
 
 
-def modify_image_resized(image: BytesIO):
+def modify_image_resized(image: BytesIO) -> IModifiedImageResponse:
     size = (256, 256)
 
     pil_image = Image.open(image)
