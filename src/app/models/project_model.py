@@ -1,4 +1,3 @@
-from typing import List, Optional
 from uuid import UUID
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -16,15 +15,15 @@ class ProjectBase(SQLModel):
 
 
 class Project(BaseUUIDModel, ProjectBase, table=True):
-    # created_by_id: Optional[UUID] = Field(default=None, foreign_key="User.id")
-    created_by_id: Optional[UUID] = Field(default=None)
+    # created_by_id: UUID | None = Field(default=None, foreign_key="User.id")
+    created_by_id: UUID | None = Field(default=None)
 
-    users: List["User"] = Relationship(  # noqa: F821
+    users: list["User"] = Relationship(  # noqa: F821
         back_populates="projects",
         link_model=ProjectUserLink,
         sa_relationship_kwargs={"lazy": "selectin"},
     )
-    tasks: List["Task"] = Relationship(  # noqa: F821
+    tasks: list["Task"] = Relationship(  # noqa: F821
         back_populates="project",
         sa_relationship_kwargs={
             "lazy": "selectin",

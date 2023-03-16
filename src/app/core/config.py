@@ -1,7 +1,7 @@
 from datetime import datetime, time, timedelta
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi_mail import ConnectionConfig
 from loguru import logger
@@ -40,10 +40,10 @@ class Settings(BaseSettings):
     DB_PORT: int | str
     DB_NAME: str
 
-    ASYNC_DB_URI: Optional[str]
+    ASYNC_DB_URI: str | None
 
     @validator("ASYNC_DB_URI", pre=True)
-    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+    def assemble_db_connection(cls, v: str | None, values: dict[str, Any]) -> Any:
         if isinstance(v, str):
             return v
         return PostgresDsn.build(
@@ -82,20 +82,20 @@ class Settings(BaseSettings):
     # --------------------------------------------------
     # > Mail
     # --------------------------------------------------
-    MAIL_USERNAME: Optional[str]
-    MAIL_PASSWORD: Optional[str]
-    MAIL_FROM: Optional[str]
-    MAIL_PORT: Optional[int]
-    MAIL_SERVER: Optional[str]
-    MAIL_STARTTLS: Optional[bool]
-    MAIL_SSL_TLS: Optional[bool]
-    EMAIL_TEMPLATES_DIR: Optional[Path | str] = Path(__file__).parent.parent / "templates/"
-    EMAIL_CONNECTION_CONFIG: Optional[ConnectionConfig] = None
+    MAIL_USERNAME: str | None
+    MAIL_PASSWORD: str | None
+    MAIL_FROM: str | None
+    MAIL_PORT: int | None
+    MAIL_SERVER: str | None
+    MAIL_STARTTLS: bool | None
+    MAIL_SSL_TLS: bool | None
+    EMAIL_TEMPLATES_DIR: Path | str | None = Path(__file__).parent.parent / "templates/"
+    EMAIL_CONNECTION_CONFIG: ConnectionConfig | None = None
 
     @validator("EMAIL_CONNECTION_CONFIG", pre=True)
     def assemble_email_config(
-        cls, v: Optional[ConnectionConfig], values: Dict[str, Any]
-    ) -> Optional[ConnectionConfig]:
+        cls, v: ConnectionConfig | None, values: dict[str, Any]
+    ) -> ConnectionConfig | None:
         if isinstance(v, ConnectionConfig):
             return v
         return ConnectionConfig(
@@ -112,10 +112,10 @@ class Settings(BaseSettings):
     # --------------------------------------------------
     # > Misc
     # --------------------------------------------------
-    BACKEND_CORS_ORIGINS: List[str] | List[AnyHttpUrl]
+    BACKEND_CORS_ORIGINS: list[str] | list[AnyHttpUrl]
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: str | List[str]) -> List[str] | str:
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
         elif isinstance(v, (list, str)):
@@ -133,14 +133,14 @@ class LogSettings(BaseSettings):
     LOG_RETENTION: timedelta
 
     @validator("LOG_ROTATION", pre=True)
-    def assemble_log_rotation(cls, v: Optional[str]) -> time:
+    def assemble_log_rotation(cls, v: str | None) -> time:
         if isinstance(v, str):
             return datetime.strptime(v, "%H:%M").time()
         else:
             return datetime.strptime("00:00", "%H:%M").time()
 
     @validator("LOG_RETENTION", pre=True)
-    def assemble_log_retention(cls, v: Optional[int]) -> timedelta:
+    def assemble_log_retention(cls, v: int | None) -> timedelta:
         if isinstance(v, int):
             return timedelta(days=v)
         else:
@@ -151,13 +151,13 @@ class LogSettings(BaseSettings):
         # env_file = os.path.expanduser("~/.env")
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> BaseSettings:
     logger.info("Loading config settings from the environment...")
     return Settings()
 
 
-@lru_cache()
+@lru_cache
 def load_log_config():
     log_settings = LogSettings()
     logging.setup(

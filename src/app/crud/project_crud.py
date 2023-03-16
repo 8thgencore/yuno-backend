@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from fastapi_pagination import Params
 from sqlalchemy.orm import selectinload
 from sqlmodel import and_, func, select
@@ -19,7 +17,7 @@ from app.schemas.task_schema import ITaskRead
 
 class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
     async def create(
-        self, *, obj_in: IProjectCreate, user: User, db_session: Optional[AsyncSession] = None
+        self, *, obj_in: IProjectCreate, user: User, db_session: AsyncSession | None = None
     ) -> Project:
         db_session = db_session or super().get_db().session
 
@@ -41,10 +39,10 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
     async def get_by_user(
         self,
         *,
-        params: Optional[Params] = Params(),
+        params: Params | None = Params(),
         user: User,
-        db_session: Optional[AsyncSession] = None,
-    ) -> List[IProjectWithUsers]:
+        db_session: AsyncSession | None = None,
+    ) -> list[IProjectWithUsers]:
         db_session = db_session or super().get_db().session
 
         query = (
@@ -55,7 +53,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         projects = await super().get_multi_paginated(params=params, query=query)
         return projects
 
-    async def remove(self, *, id: str, db_session: Optional[AsyncSession] = None) -> Project:
+    async def remove(self, *, id: str, db_session: AsyncSession | None = None) -> Project:
         db_session = db_session or super().get_db().session
 
         # delete links
@@ -81,7 +79,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return obj
 
     async def is_member_project(
-        self, *, user_id: str, project_id: str, db_session: Optional[AsyncSession] = None
+        self, *, user_id: str, project_id: str, db_session: AsyncSession | None = None
     ) -> bool:
         db_session = db_session or super().get_db().session
 
@@ -97,7 +95,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return True if obj else False
 
     async def join_the_project(
-        self, *, user: User, project: Project, db_session: Optional[AsyncSession] = None
+        self, *, user: User, project: Project, db_session: AsyncSession | None = None
     ) -> Project:
         db_session = db_session or super().get_db().session
 
@@ -111,7 +109,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return project
 
     async def leave_the_project(
-        self, *, user: User, project: Project, db_session: Optional[AsyncSession] = None
+        self, *, user: User, project: Project, db_session: AsyncSession | None = None
     ) -> Project:
         db_session = db_session or super().get_db().session
 
@@ -131,8 +129,8 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return project
 
     async def get_tasks(
-        self, *, project_id: str, db_session: Optional[AsyncSession] = None
-    ) -> List[ITaskRead]:
+        self, *, project_id: str, db_session: AsyncSession | None = None
+    ) -> list[ITaskRead]:
         db_session = db_session or super().get_db().session
 
         query = select(Task).where(Task.project_id == project_id)
@@ -140,15 +138,15 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return tasks
 
     async def get_members(
-        self, *, project: IProjectRead, db_session: Optional[AsyncSession] = None
-    ) -> List[ITaskRead]:
+        self, *, project: IProjectRead, db_session: AsyncSession | None = None
+    ) -> list[ITaskRead]:
         db_session = db_session or super().get_db().session
 
         query = select(User).where(User.projects.contains(project))
         tasks = await super().get_multi_paginated(query=query)
         return tasks
 
-    async def get_stats(self, *, db_session: Optional[AsyncSession] = None) -> List[ITaskRead]:
+    async def get_stats(self, *, db_session: AsyncSession | None = None) -> list[ITaskRead]:
         db_session = db_session or super().get_db().session
 
         projects_count = await super().get_count()

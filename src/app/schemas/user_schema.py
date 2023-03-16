@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Optional
 from uuid import UUID
 
 from pydantic import Field
@@ -11,7 +10,7 @@ from app.utils.partial import optional
 
 
 class IUserCreate(UserBase):
-    password: Optional[str]
+    password: str | None
 
     class Config:
         hashed_password = None
@@ -25,7 +24,7 @@ class IUserUpdate(UserBase):
 
 class IUserRead(UserBase):
     id: UUID
-    image: Optional[IImageMediaRead] = Field(..., repr=True)
+    image: IImageMediaRead | None = Field(..., repr=True)
 
 
 class IUserWithoutImage(UserBase):
@@ -34,8 +33,8 @@ class IUserWithoutImage(UserBase):
 
 class IUserReadWithRole(UserBase):
     id: UUID
-    role: Optional[IRoleRead] = None
-    image: Optional[IImageMediaRead] = Field(..., repr=True)
+    role: IRoleRead | None = None
+    image: IImageMediaRead | None = Field(..., repr=True)
 
 
 class IUserStatus(str, Enum):

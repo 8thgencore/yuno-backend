@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
 from pydantic import EmailStr
@@ -15,22 +15,22 @@ class UserBase(SQLModel):
     last_name: str
     username: str = Field(nullable=True, sa_column_kwargs={"unique": True})
     email: EmailStr = Field(nullable=True, index=True, sa_column_kwargs={"unique": True})
-    birthdate: Optional[datetime] = Field(
+    birthdate: datetime | None = Field(
         sa_column=Column(DateTime(timezone=True), nullable=True)
     )  # birthday with timezone
-    phone: Optional[str]
-    role_id: Optional[UUID] = Field(default=None, foreign_key="Role.id")
+    phone: str | None
+    role_id: UUID | None = Field(default=None, foreign_key="Role.id")
 
 
 class User(BaseUUIDModel, UserBase, table=True):
-    hashed_password: Optional[str] = Field(nullable=False, index=True)
+    hashed_password: str | None = Field(nullable=False, index=True)
     role: Optional["Role"] = Relationship(  # noqa: F821
         back_populates="users",
         sa_relationship_kwargs={"lazy": "joined"},
     )
     is_active: bool = Field(default=True)
     is_superuser: bool = Field(default=False)
-    image_id: Optional[UUID] = Field(default=None, foreign_key="ImageMedia.id")
+    image_id: UUID | None = Field(default=None, foreign_key="ImageMedia.id")
     image: ImageMedia = Relationship(
         sa_relationship_kwargs={
             "lazy": "joined",
@@ -38,7 +38,7 @@ class User(BaseUUIDModel, UserBase, table=True):
         }
     )
 
-    projects: List["Project"] = Relationship(  # noqa: F821
+    projects: list["Project"] = Relationship(  # noqa: F821
         back_populates="users",
         link_model=ProjectUserLink,
         sa_relationship_kwargs={"lazy": "selectin"},

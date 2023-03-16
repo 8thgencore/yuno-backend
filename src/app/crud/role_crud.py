@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from sqlmodel import select
@@ -11,9 +10,7 @@ from app.schemas.role_schema import IRoleCreate, IRoleUpdate
 
 
 class CRUDRole(CRUDBase[Role, IRoleCreate, IRoleUpdate]):
-    async def get_role_by_name(
-        self, *, name: str, db_session: Optional[AsyncSession] = None
-    ) -> Role:
+    async def get_role_by_name(self, *, name: str, db_session: AsyncSession | None = None) -> Role:
         db_session = db_session or super().get_db().session
         role = await db_session.execute(select(Role).where(Role.name == name))
         return role.scalar_one_or_none()

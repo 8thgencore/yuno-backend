@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from math import ceil
-from typing import Any, Dict, Generic, Optional, Sequence, TypeVar
+from typing import Any, Generic, TypeVar
 
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage, AbstractParams
@@ -11,19 +12,19 @@ T = TypeVar("T")
 
 class PageBase(Page[T], Generic[T]):
     pages: int
-    next_page: Optional[int]
-    previous_page: Optional[int]
+    next_page: int | None
+    previous_page: int | None
 
 
 class IResponseBase(GenericModel, Generic[T]):
     message: str = ""
-    meta: Dict = {}
-    data: Optional[T]
+    meta: dict = {}
+    data: T | None
 
 
 class IResponsePage(AbstractPage[T], Generic[T]):
     message: str = ""
-    meta: Dict = {}
+    meta: dict = {}
     data: PageBase[T]
 
     __params_type__ = Params  # Set params related to Page
@@ -74,10 +75,10 @@ class IDeleteResponseBase(IResponseBase[DataType], Generic[DataType]):
 
 
 def create_response(
-    data: Optional[DataType],
-    message: Optional[str] = "",
-    meta: Optional[Dict | Any] = {},
-) -> Dict[str, DataType] | DataType:
+    data: DataType | None,
+    message: str | None = "",
+    meta: dict | Any | None = {},
+) -> dict[str, DataType] | DataType:
     if isinstance(data, IResponsePage):
         data.message = "Data paginated correctly" if not message else message
         data.meta = meta

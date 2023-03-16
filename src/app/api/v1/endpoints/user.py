@@ -1,6 +1,5 @@
 import os
 from io import BytesIO
-from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, File, Query, Response, UploadFile, status
 from fastapi_pagination import Params
@@ -91,7 +90,8 @@ async def read_users_list(
 
 @router.get("/list/by_created_at")
 async def get_user_list_order_by_created_at(
-    order: Optional[IOrderEnum] = Query(
+    order: IOrderEnum
+    | None = Query(
         default=IOrderEnum.ascendent,
         description="It is optional. Default is ascendent",
     ),
@@ -155,8 +155,8 @@ async def remove_user_by_id(
 
 @router.post("/image")
 async def upload_my_image(
-    title: Optional[str] = Body(None),
-    description: Optional[str] = Body(None),
+    title: str | None = Body(None),
+    description: str | None = Body(None),
     image_file: UploadFile = File(...),
     current_user: User = Depends(deps.get_current_user()),
     minio_client: MinioClient = Depends(deps.minio_auth),
@@ -199,8 +199,8 @@ async def upload_my_image(
 @router.post("/{user_id}/image")
 async def upload_user_image(
     user: User = Depends(user_deps.is_valid_user),  # user_id
-    title: Optional[str] = Body(None),
-    description: Optional[str] = Body(None),
+    title: str | None = Body(None),
+    description: str | None = Body(None),
     image_file: UploadFile = File(...),
     current_user: User = Depends(deps.get_current_user()),
     minio_client: MinioClient = Depends(deps.minio_auth),

@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 from uuid import UUID
 
 from pydantic import AnyHttpUrl, validator
@@ -22,7 +22,7 @@ class IMediaUpdate(MediaBase):
 
 class IMediaRead(MediaBase):
     id: UUID | str
-    link: Optional[str] = None
+    link: str | None = None
 
     @validator(
         "link", pre=True, check_fields=False, always=True

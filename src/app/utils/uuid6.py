@@ -9,7 +9,6 @@ Repo: https://github.com/oittaa/uuid6-python
 import secrets
 import time
 import uuid
-from typing import Tuple
 
 
 class UUID(uuid.UUID):
@@ -20,7 +19,7 @@ class UUID(uuid.UUID):
         hex: str | None = None,
         bytes: bytes | None = None,
         bytes_le: bytes | None = None,
-        fields: Tuple[int, int, int, int, int, int] | None = None,
+        fields: tuple[int, int, int, int, int, int] | None = None,
         int: int | None = None,
         version: int | None = None,
         *,

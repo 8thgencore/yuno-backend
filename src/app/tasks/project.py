@@ -27,7 +27,7 @@ def calculate_percent_completed_task(project_id: str) -> None:
             project = result.scalar_one_or_none()
 
             if project:
-                project.percent_completed = float("{:.2f}".format(task_complited / task_all))
+                project.percent_completed = float(f"{task_complited / task_all:.2f}")
 
                 db_session.add(project)
                 await db_session.commit()

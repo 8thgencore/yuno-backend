@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import Set
 from uuid import UUID
 
 from redis.asyncio import Redis
@@ -22,7 +21,7 @@ async def add_token_to_redis(
         await redis_client.expire(token_key, timedelta(minutes=expire_time))
 
 
-async def get_valid_tokens(redis_client: Redis, user_id: UUID, token_type: TokenType) -> Set:
+async def get_valid_tokens(redis_client: Redis, user_id: UUID, token_type: TokenType) -> set:
     token_key = f"user:{user_id}:{token_type}"
     valid_tokens = await redis_client.smembers(token_key)
     return valid_tokens

@@ -1,4 +1,3 @@
-from typing import List, Optional
 from uuid import UUID
 
 from app.models.project_model import ProjectBase
@@ -24,11 +23,11 @@ class IProjectRead(ProjectBase):
 class IProjectWithUsers(ProjectBase):
     id: UUID
     created_by_id: UUID
-    users: Optional[List[IUserWithoutImage]] = []
+    users: list[IUserWithoutImage] | None = []
 
 
 class IProjectWithUsersTasks(ProjectBase):
     id: UUID
     created_by_id: UUID
-    tasks: Optional[List[ITaskRead]] = []
-    users: Optional[List[IUserRead]] = []
+    tasks: list[ITaskRead] | None = []
+    users: list[IUserRead] | None = []

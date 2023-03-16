@@ -1,18 +1,16 @@
-from typing import Dict, List
-
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app import crud
 from app.schemas.role_schema import IRoleCreate
 from app.schemas.user_schema import IUserCreate
 
-roles: List[IRoleCreate] = [
+roles: list[IRoleCreate] = [
     IRoleCreate(name="admin", description="Admin role"),
     IRoleCreate(name="manager", description="Manager role"),
     IRoleCreate(name="user", description="User role"),
 ]
 
-users: List[Dict[str, str | IUserCreate]] = [
+users: list[dict[str, str | IUserCreate]] = [
     {
         "data": IUserCreate(
             first_name="Admin",

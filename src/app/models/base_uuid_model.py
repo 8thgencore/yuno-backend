@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic.datetime_parse import parse_datetime
 from sqlalchemy.orm import declared_attr
@@ -24,11 +24,11 @@ class BaseUUIDModel(SQLModel):
         index=True,
         nullable=False,
     )
-    updated_at: Optional[datetime] = Field(
+    updated_at: datetime | None = Field(
         default_factory=datetime.utcnow,
         sa_column_kwargs={"onupdate": datetime.utcnow},
     )
-    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    created_at: datetime | None = Field(default_factory=datetime.utcnow)
 
 
 class UTCDatetime(datetime):

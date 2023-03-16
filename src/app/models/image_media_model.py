@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -8,13 +7,13 @@ from app.models.media_model import Media
 
 
 class ImageMediaBase(SQLModel):
-    file_format: Optional[str]
-    width: Optional[int]
-    height: Optional[int]
+    file_format: str | None
+    width: int | None
+    height: int | None
 
 
 class ImageMedia(BaseUUIDModel, ImageMediaBase, table=True):
-    media_id: Optional[UUID] = Field(default=None, foreign_key="Media.id")
+    media_id: UUID | None = Field(default=None, foreign_key="Media.id")
     media: Media = Relationship(
         sa_relationship_kwargs={
             "lazy": "joined",

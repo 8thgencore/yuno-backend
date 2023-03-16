@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from app.models.task_model import TaskBase
@@ -6,7 +5,7 @@ from app.utils.partial import optional
 
 
 class ITaskCreate(TaskBase):
-    project_id: Optional[UUID]
+    project_id: UUID | None
 
 
 @optional
@@ -16,10 +15,10 @@ class ITaskUpdate(TaskBase):
 
 class ITaskRead(TaskBase):
     id: UUID
-    project_id: Optional[UUID]
+    project_id: UUID | None
 
 
 class ITaskWithProjectName(TaskBase):
     id: UUID
-    project_id: Optional[UUID]
-    project_name: Optional[str]
+    project_id: UUID | None
+    project_name: str | None

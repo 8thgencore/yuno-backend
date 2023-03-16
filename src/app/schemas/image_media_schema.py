@@ -1,5 +1,3 @@
-from typing import Optional
-
 from app.models.image_media_model import ImageMediaBase
 from app.schemas.media_schema import IMediaRead
 from app.utils.partial import optional
@@ -17,4 +15,4 @@ class IImageMediaUpdate(ImageMediaBase):
 
 
 class IImageMediaRead(ImageMediaBase):
-    media: Optional[IMediaRead]
+    media: IMediaRead | None
