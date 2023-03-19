@@ -40,8 +40,7 @@ async def login(
     meta_data: IMetaGeneral = Depends(deps.get_general_meta),
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> IPostResponseBase[Token]:
-    """
-    Authenticate a user with email and password.
+    """Authenticate a user with email and password.
 
     Args:
       - `IAuthLogin`: The user's login credentials.
@@ -97,8 +96,7 @@ async def login(
 async def register(
     register_user: IAuthRegister,
 ) -> IPostResponseBase[IUserRead]:
-    """
-    Register a new user.
+    """Register a new user.
 
     Args:
       - `IAuthRegister`: The user to register, including their email, username, and password.
@@ -137,8 +135,7 @@ async def login_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> TokenRead:
-    """
-    OAuth2 compatible token login, get an access token for future requests
+    """OAuth2 compatible token login, get an access token for future requests.
 
     Parameters:
       - `OAuth2PasswordRequestForm`: Form data containing email and password of the user.
@@ -167,6 +164,7 @@ async def login_access_token(
             TokenType.ACCESS,
             settings.ACCESS_TOKEN_EXPIRE_MINUTES,
         )
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -178,8 +176,7 @@ async def get_new_access_token(
     body: RefreshToken = Body(...),
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> IPostResponseBase[TokenRead]:
-    """
-    OAuth2 compatible token, get an access token for future requests using refresh token
+    """OAuth2 compatible token, get an access token for future requests using refresh token.
 
     Parameters:
       - `RefreshToken`: Request body containing the refresh token.
@@ -236,8 +233,7 @@ async def change_password(
     current_user: User = Depends(deps.get_current_user()),
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> IPostResponseBase[Token]:
-    """
-    This endpoint allows the user to change their password.
+    """This endpoint allows the user to change their password.
 
     Args:
       - `IAuthChangePassword`: The request body, which include the user's current and new passwords.
@@ -309,14 +305,13 @@ async def forgot_password(
     body: IAuthForgotPassword,
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> IPostResponseBase:
-    """
-    This endpoint sends a verification email containing a one-time password to the provided email address.
+    """This endpoint sends a verification email containing a one-time password to the provided email address.
 
     Args:
       - `IAuthForgotPassword`: The request body, which should include an email address.
 
     Returns:
-      - `dict`: A dictionary  indicating that the OTP code has been success sent to the email address.
+      - `Response`: A dictionary indicating that the OTP code has been success sent to the email address.
 
     Raises:
       - `HTTPException`: If the provided email address is not associated with an existing user.
@@ -346,8 +341,7 @@ async def send_otp_code(
     body: IAuthOtpCode,
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> IPostResponseBase[ResetToken]:
-    """
-    Endpoint to send an OTP code to the user's email.
+    """Endpoint to send an OTP code to the user's email.
 
     Args:
       - `IAuthOtpCode`: The request body, which include an otp code.
@@ -401,8 +395,7 @@ async def reset_password(
     body: IAuthResetPassword,
     redis_client: Redis = Depends(deps.get_redis_client),
 ) -> IPostResponseBase[IUserRead]:
-    """
-    Endpoint allows the user to reset password
+    """Endpoint allows the user to reset password.
 
     Args:
       - `IAuthResetPassword`: The request body, which include the user's reset token and new passwords.

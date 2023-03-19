@@ -35,9 +35,8 @@ router = APIRouter()
 async def get_my_data(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponseBase[IUserRead]:
-    """
-    Gets my user profile information
-    """
+    """Gets my user profile information."""
+
     return create_response(data=current_user)
 
 
@@ -46,9 +45,7 @@ async def update_my_data(
     user: IUserUpdate,
     current_user: User = Depends(deps.get_current_user()),
 ) -> IPutResponseBase[IUserRead]:
-    """
-    Update my user profile information
-    """
+    """Update my user profile information."""
     if current_user.email != user.email:
         await user_deps.email_exists(user=user)
     if current_user.username != user.username:
@@ -65,14 +62,17 @@ async def create_user(
     user: IUserCreate = Depends(user_deps.user_exists),
     current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
 ) -> IPostResponseBase[IUserRead]:
-    """
-    Creates a new user
+    """Creates a new user.
+
+    Required roles:
+      - admin
     """
     role = await crud.role.get(id=user.role_id)
     if not role:
         raise IdNotFoundException(Role, id=user.role_id)
 
     user = await crud.user.create_with_role(obj_in=user)
+
     return create_response(data=user)
 
 
@@ -81,10 +81,9 @@ async def read_users_list(
     params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IUserRead]:
-    """
-    Retrieve users. Requires admin or manager role
-    """
+    """Retrieve users. Requires admin or manager role."""
     users = await crud.user.get_multi_paginated(params=params)
+
     return create_response(data=users)
 
 
@@ -98,14 +97,13 @@ async def get_user_list_order_by_created_at(
     params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IUserRead]:
-    """
-    Gets a paginated list of users ordered by created datetime
-    """
+    """Gets a paginated list of users ordered by created datetime."""
     users = await crud.user.get_multi_paginated_ordered(
         params=params,
         order=order,
         order_by="created_at",
     )
+
     return create_response(data=users)
 
 
@@ -115,8 +113,7 @@ async def get_user_by_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponseBase[IUserRead]:
     """
-    Gets a user by his/her id
-    """
+    Gets a user by his/her id."""
     return create_response(data=user)
 
 
@@ -126,8 +123,10 @@ async def update_user_by_id(
     updated_user: User = Depends(user_deps.is_valid_user),  # user_id
     current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
 ) -> IPutResponseBase[IUserRead]:
-    """
-    Update a user by his/her id
+    """Update a user by his/her id.
+
+    Required roles:
+      - admin
     """
     if updated_user.email != user.email:
         await user_deps.email_exists(user=user)
@@ -135,6 +134,7 @@ async def update_user_by_id(
         await user_deps.username_exists(user=user)
 
     user_updated = await crud.user.update(obj_new=user, obj_current=updated_user)
+
     return create_response(data=user_updated)
 
 
@@ -143,13 +143,16 @@ async def remove_user_by_id(
     user: User = Depends(user_deps.is_valid_user),  # user_id
     current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
 ) -> IDeleteResponseBase[IUserRead]:
-    """
-    Delete a user by his/her id
+    """Delete a user by his/her id.
+
+    Required roles:
+      - admin
     """
     if current_user.id == user.id:
         raise UserSelfDeleteException()
 
     user = await crud.user.remove(id=user.id)
+
     return create_response(data=user, message="User removed")
 
 
@@ -161,9 +164,7 @@ async def upload_my_image(
     current_user: User = Depends(deps.get_current_user()),
     minio_client: MinioClient = Depends(deps.minio_auth),
 ) -> IPostResponseBase[IUserRead]:
-    """
-    Uploads a user image
-    """
+    """Uploads a user image."""
     try:
         image_bytes = BytesIO(image_file.file.read())
         image_modified = modify_image(image_bytes)
@@ -191,8 +192,9 @@ async def upload_my_image(
         generate_avatar_thumbnail.delay(current_user.id, data_file.file_name)
 
         return create_response(data=user)
+
     except Exception as e:
-        print(e)
+        logger.error(e)
         return Response("Internal server error", status_code=500)
 
 
@@ -202,11 +204,13 @@ async def upload_user_image(
     title: str | None = Body(None),
     description: str | None = Body(None),
     image_file: UploadFile = File(...),
-    current_user: User = Depends(deps.get_current_user()),
+    current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
     minio_client: MinioClient = Depends(deps.minio_auth),
 ) -> IPostResponseBase[IUserRead]:
-    """
-    Uploads a user image by his/her id
+    """Uploads a user image by his/her id.
+
+    Required roles:
+      - admin
     """
     try:
         image_modified = modify_image(BytesIO(image_file.file.read()))
@@ -223,7 +227,9 @@ async def upload_user_image(
             width=image_modified.width,
             file_format=image_modified.file_format,
         )
+
         return create_response(data=user)
+
     except Exception as e:
-        print(e)
+        logger.error(e)
         return Response("Internal server error", status_code=500)

@@ -27,8 +27,10 @@ async def create_role(
     role: IRoleCreate,
     current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
 ) -> IPostResponseBase[IRoleRead]:
-    """
-    Create a new role
+    """Create a new role.
+
+    Required roles:
+      - admin
     """
     role_current = await crud.role.get_role_by_name(name=role.name)
     if role_current:
@@ -43,10 +45,9 @@ async def get_roles_list(
     params: Params = Depends(),
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IRoleRead]:
-    """
-    Gets a paginated list of roles
-    """
+    """Gets a paginated list of roles."""
     roles = await crud.role.get_multi_paginated(params=params)
+
     return create_response(data=roles)
 
 
@@ -55,9 +56,7 @@ async def get_role_by_id(
     role: Role = Depends(role_deps.get_role_by_id),  # role_id
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponseBase[IRoleRead]:
-    """
-    Gets a role by its id
-    """
+    """Gets a role by its id."""
     return create_response(data=role)
 
 
@@ -67,8 +66,10 @@ async def update_permission(
     current_role: Role = Depends(role_deps.get_role_by_id),  # role_id
     current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
 ) -> IPutResponseBase[IRoleRead]:
-    """
-    Updates the permission of a role by its id
+    """Updates the permission of a role by its id.
+
+    Required roles:
+      - admin
     """
     if current_role.name == role.name and current_role.description == role.description:
         raise ContentNoChangeException()
@@ -78,4 +79,5 @@ async def update_permission(
         raise NameExistException(Role, name=role.name)
 
     updated_role = await crud.role.update(obj_current=current_role, obj_new=role)
+
     return create_response(data=updated_role)

@@ -11,7 +11,7 @@ exclude = "((.eggs | .git | .pytest_cache | build | dist))"
 
 [tool.ruff]
 line-length = 99
-exclude = [".git", "__pycache__", ".mypy_cache", ".pytest_cache"]
+exclude = [".git", "__pycache__", ".mypy_cache", ".pytest_cache", "alembic"]
 select = [
     "E", # pycodestyle errors
     "W", # pycodestyle warnings
@@ -31,24 +31,6 @@ ignore = [
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["F401"]
-
-[tool.mypy]
-python_version = "3.11"
-show_error_codes = true
-strict = true
-overrides = [
-    { module = [
-        "colorama.*",
-        "coverage.*",
-        "distlib.*",
-        "flaky.*",
-        "importlib_metadata.*",
-        "pluggy.*",
-        "psutil.*",
-        "re_assert.*",
-        "virtualenv.*",
-    ], ignore_missing_imports = true },
-]
 
 [tool.poetry.dependencies]
 # Python version
