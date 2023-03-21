@@ -36,7 +36,7 @@ ignore = [
 # Python version
 python = "^3.11"
 # FastApi and Extencions
-fastapi = { extras = ["all"], version = "^0.94.1" }
+fastapi = { extras = ["all"], version = "^0.95.0" }
 fastapi-cache2 = { extras = ["redis"], version = "^0.2.1" }
 fastapi-pagination = { extras = ["sqlalchemy"], version = "^0.11.4" }
 fastapi-async-sqlalchemy = "^0.3.14"
@@ -52,7 +52,7 @@ asyncpg = "^0.27.0"
 minio = "^7.1.13"
 Pillow = "^9.4.0"
 # Celery
-redis = "^4.5.1"
+redis = "^4.5.2"
 celery = "^5.2.7"
 flower = "^1.2.0"
 watchfiles = "^0.18.1"
@@ -72,7 +72,7 @@ pytest = "^7.2.2"
 black = "^23.1.0"
 ruff = "^0.0.256"
 interrogate = "^1.5.0"
-pre-commit = "^3.1.1"
+pre-commit = "^3.2.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
