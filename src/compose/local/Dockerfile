@@ -33,17 +33,18 @@ RUN poetry config virtualenvs.create false \
   && poetry install $INSTALL_ARGS
 
 # cleanup
-RUN curl -sSL https://install.python-poetry.org | python3 - --uninstall
-RUN apt-get purge -y curl git build-essential gcc \
+RUN curl -sSL https://install.python-poetry.org | python3 - --uninstall \
+  && apt-get purge -y curl git build-essential gcc \
   && apt-get clean -y \
-  && rm -rf /root/.cache \
-  && rm -rf /var/apt/lists/* \
-  && rm -rf /var/cache/apt/*
+  && rm -rf /root/.cache /var/apt/lists/* /var/cache/apt/*
 
 # -----------------------------------------------------------------------------
 # App-image stage
 # -----------------------------------------------------------------------------
 FROM install as app-image
+
+# set working directory
+WORKDIR /usr/src
 
 # run fastapi project
 COPY ./compose/local/start /start
@@ -63,8 +64,7 @@ RUN sed -i 's/\r$//g' /start-flower \
 # add app
 COPY . .
 
-# add entrypoint.sh
-COPY entrypoint.sh .
+# chmod entrypoint.sh
 RUN chmod +x /usr/src/entrypoint.sh
 
 # run entrypoint.sh
