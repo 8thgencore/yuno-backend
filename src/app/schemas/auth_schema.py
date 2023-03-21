@@ -1,4 +1,6 @@
-from pydantic import BaseModel, EmailStr, Field
+from typing import Any
+
+from pydantic import BaseModel, EmailStr, Field, validator
 
 
 class IAuthLogin(BaseModel):
@@ -7,6 +9,10 @@ class IAuthLogin(BaseModel):
     email: EmailStr
     password: str
 
+    @validator("email", pre=True, check_fields=False, always=True)
+    def validate_email(cls, value: str, values: Any) -> EmailStr():
+        return value.lower()
+
 
 class IAuthRegister(BaseModel):
     """Registration Input Schema"""
@@ -14,6 +20,10 @@ class IAuthRegister(BaseModel):
     email: EmailStr
     username: str
     password: str
+
+    @validator("email", pre=True, check_fields=False, always=True)
+    def validate_email(cls, value: str, values: Any) -> EmailStr():
+        return value.lower()
 
 
 class IAuthChangePassword(BaseModel):
@@ -28,12 +38,20 @@ class IAuthForgotPassword(BaseModel):
 
     email: str = Field(description="Email address of a user")
 
+    @validator("email", pre=True, check_fields=False, always=True)
+    def validate_email(cls, value: str, values: Any) -> EmailStr():
+        return value.lower()
+
 
 class IAuthOtpCode(BaseModel):
     """OTP code Input Schema"""
 
     email: str = Field(description="Email address of a user")
     otp: str = Field(description="OTP code")
+
+    @validator("email", pre=True, check_fields=False, always=True)
+    def validate_email(cls, value: str, values: Any) -> EmailStr():
+        return value.lower()
 
 
 class IAuthResetPassword(BaseModel):

@@ -24,9 +24,8 @@ class IMediaRead(MediaBase):
     id: UUID | str
     link: str | None = None
 
-    @validator(
-        "link", pre=True, check_fields=False, always=True
-    )  # Always true because link does not exist in the database
+    # Always true because link does not exist in the database
+    @validator("link", pre=True, check_fields=False, always=True)
     def default_icon(cls, value: Any, values: Any) -> AnyHttpUrl:
         if values["path"] is None:
             return ""
