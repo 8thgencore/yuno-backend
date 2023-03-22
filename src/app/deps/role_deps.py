@@ -20,9 +20,7 @@ async def get_role_by_name(
     return role
 
 
-async def get_role_by_id(
-    role_id: Annotated[UUID, Path(title="The UUID id of the role")] = ""
-) -> Role:
+async def get_role_by_id(role_id: Annotated[UUID, Path(title="The UUID id of the role")]) -> Role:
     role = await crud.role.get(id=role_id)
     if not role:
         raise IdNotFoundException(Role, id=role_id)
