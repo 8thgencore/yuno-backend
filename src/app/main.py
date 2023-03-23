@@ -2,6 +2,8 @@
 Main FastAPI app instance declaration
 """
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
@@ -14,6 +16,18 @@ from app.api.deps import get_redis_client
 from app.api.v1.api import api_router as api_router_v1
 from app.core.config import load_log_config, settings
 from app.utils.celery_utils import create_celery
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Starting up...")
+    redis_client = await get_redis_client()
+    FastAPICache.init(RedisBackend(redis_client), prefix="fastapi-cache")
+
+    yield
+
+    logger.info("Shutting down...")
+    await FastAPICache.clear()
 
 
 # Initialize the application and create a FastAPI instance
@@ -29,6 +43,7 @@ def create_application() -> FastAPI:
         description=settings.APP_DESCRIPTION,
         openapi_url="/openapi.json",
         docs_url="/",
+        lifespan=lifespan,
     )
 
     # Create a celery instance and set it as an attribute of the app
@@ -70,16 +85,3 @@ app = create_application()
 
 # Get the celery instance
 celery = app.celery_app
-
-
-@app.on_event("startup")
-async def startup_event():
-    redis_client = await get_redis_client()
-    FastAPICache.init(RedisBackend(redis_client), prefix="fastapi-cache")
-    logger.info("Starting up...")
-    # init_db(app)
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Shutting down...")
