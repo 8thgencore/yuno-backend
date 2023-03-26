@@ -9,9 +9,9 @@ services:
     command: /start
     restart: unless-stopped
     ports:
-      - 8080:8000
+      - 8111:8000
     env_file:
-      - .env.prod
+      - .env
     depends_on:
       - db
 
@@ -23,13 +23,13 @@ services:
     expose:
       - 5432
     env_file:
-      - .env.prod
+      - .env
     environment:
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASS:-postgres}
+      - POSTGRES_USER=${DB_USER:?DB_USER variable is not set}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:?DB_PASSWORD variable is not set}
       - POSTGRES_DB=${DB_NAME:-db-prod}
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "${DB_USER}", "-d", "${DB_NAME}" ]
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}", "-d", "${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,7 +49,7 @@ services:
     expose:
       - 6379
     env_file:
-      - .env.prod
+      - .env
     environment:
       - ALLOW_EMPTY_PASSWORD=no
 
@@ -60,13 +60,13 @@ services:
     volumes:
       - ./minio/data:/data
     ports:
-      - 9080:9000
-      - 9081:9001
+      - 9000:9000
+      - 9001:9001
     env_file:
-      - .env.prod
+      - .env
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER variable is not set}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD variable is not set}
       MINIO_BROWSER_REDIRECT_URL: http://minio
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -81,21 +81,7 @@ services:
       dockerfile: ./compose/production/Dockerfile
     command: /start-celeryworker
     env_file:
-      - .env.prod
-    depends_on:
-      - redis-server
-      - db
-
-  flower:
-    container_name: ${FLOWER_CONTAINER_NAME:-yuno-flower-container}
-    build:
-      context: ./src
-      dockerfile: ./compose/production/Dockerfile
-    command: /start-flower
-    env_file:
-      - .env.prod
-    ports:
-      - 5585:5555
+      - .env
     depends_on:
       - redis-server
       - db

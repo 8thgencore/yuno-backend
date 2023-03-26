@@ -4,7 +4,7 @@
 
 ### Production
 
-1. Copy file **.env.prod.example** to **.env.prod** and fill in 
+1. Copy file **.env.prod.example** to **.env** and fill in 
 
 *Using docker compose command*
 ```sh
