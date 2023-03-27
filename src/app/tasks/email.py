@@ -21,6 +21,7 @@ def send_verification_email(email_to: str, otp_code: int) -> None:
     )
 
     fm = FastMail(settings.EMAIL_CONNECTION_CONFIG)
+
     try:
         asyncio.run(fm.send_message(message, template_name="verification_email.html"))
         logger.info(f"Otp code has been successfully sent to e-mail: '{email_to}'")
