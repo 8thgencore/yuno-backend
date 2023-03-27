@@ -4,28 +4,38 @@
 
 ### Production
 
-1. Copy file **.env.prod.example** to **.env** and fill in 
+1. Copy file **.env.prod.example** to **.env** and fill in
 
-*Using docker compose command*
+Create network
+
 ```sh
-docker compose -f docker-compose.prod.yml up -d --build 
+docker network create external_network
 ```
 
-*Using Makefile command*
+_Using docker compose command_
+
+```sh
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+_Using Makefile command_
+
 ```sh
 make run-prod-build
 ```
 
 ### Development
 
-1. Copy file **.env.example** to **.env** and fill in 
-  
-*Using docker compose command*
+1. Copy file **.env.example** to **.env** and fill in
+
+_Using docker compose command_
+
 ```sh
 docker compose up -d --build
 ```
 
-*Using Makefile command*
+_Using Makefile command_
+
 ```sh
 make run-dev-build
 ```
@@ -34,12 +44,14 @@ make run-dev-build
 
 This creates sample users on database.
 
-*Using docker compose command*
+_Using docker compose command_
+
 ```sh
 docker compose -f docker-compose.yml exec web python -m app.initial_data
 ```
 
-*Using Makefile command*
+_Using Makefile command_
+
 ```sh
 make init-db
 ```
@@ -48,36 +60,37 @@ You can connect to the Database using pgAdmin4 and use the credentials from .env
 
 (Optional) If you prefer you can run pgAdmin4 on a docker container using the following commands, they should executed on different terminals:
 
-*Starts pgadmin*
+_Starts pgadmin_
+
 ```sh
 make pgadmin-run
 ```
 
-*Load server configuration (It is required just the first time)*
+_Load server configuration (It is required just the first time)_
+
 ```sh
 make pgadmin-load-server
 ```
 
-*Remove pgadmin volume*
+_Remove pgadmin volume_
+
 ```sh
 make pgadmin-clean
 ```
 
-
-
 This starts pgamin in [http://localhost:15432](http://localhost:15432).
-
-
 
 ## Run Alembic migrations (Only if you change the DB model)
 
-*Using docker compose command*
+_Using docker compose command_
+
 ```sh
 docker compose -f docker-compose.yml exec web alembic revision --autogenerate
 docker compose -f docker-compose.yml exec web alembic upgrade head
 ```
 
-*Using Makefile command*
+_Using Makefile command_
+
 ```sh
 make add-dev-migration
 ```
