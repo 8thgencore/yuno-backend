@@ -41,6 +41,7 @@ fastapi-cache2 = { extras = ["redis"], version = "^0.2.1" }
 fastapi-pagination = { extras = ["sqlalchemy"], version = "^0.11.4" }
 fastapi-async-sqlalchemy = "^0.3.14"
 python-multipart = "^0.0.6"
+asyncer = "^0.0.2"
 # ASGI server
 uvicorn = "^0.21.1"
 gunicorn = "^20.1.0"
@@ -49,7 +50,7 @@ sqlmodel = "^0.0.8"
 alembic = "^1.10.2"
 asyncpg = "^0.27.0"
 # For S3
-minio = "^7.1.13"
+minio = "^7.1.14"
 Pillow = "^9.4.0"
 # Celery
 redis = "^4.5.3"
@@ -72,7 +73,7 @@ pytest = "^7.2.2"
 black = "^23.1.0"
 ruff = "^0.0.258"
 interrogate = "^1.5.0"
-pre-commit = "^3.2.0"
+pre-commit = "^3.2.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
