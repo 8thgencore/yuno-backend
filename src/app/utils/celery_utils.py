@@ -13,7 +13,7 @@ def create_celery():
 
 def get_task_info(task_id):
     """
-    return task info according to the task_id
+    Return task info according to the task_id.
     """
     task = AsyncResult(task_id)
     state = task.state
@@ -28,4 +28,5 @@ def get_task_info(task_id):
         response = {
             "state": task.state,
         }
+
     return response
