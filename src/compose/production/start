@@ -9,4 +9,4 @@ alembic upgrade head
 # If we do not use python-socketio, we can increase the worker process number here
 # https://python-socketio.readthedocs.io/en/latest/server.html#scalability-notes
 # https://python-socketio.readthedocs.io/en/latest/server.html#eventlet-with-gunicorn
-gunicorn app.asgi:app -w 1 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8111 --chdir=/app
+gunicorn app.asgi:app -w 1 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8111 --chdir=/usr/src/app
