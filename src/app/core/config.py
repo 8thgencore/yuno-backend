@@ -75,7 +75,7 @@ class Settings(BaseSettings):
     # > Celery
     # --------------------------------------------------
     CELERY_BROKER_URL: str
-    result_backend: str
+    RESULT_BACKEND: str
 
     WS_MESSAGE_QUEUE: str
 
