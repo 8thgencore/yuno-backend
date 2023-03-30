@@ -21,7 +21,6 @@ from app.schemas.task_schema import (
     ITaskUpdate,
     ITaskWithProjectName,
 )
-from app.tasks import calculate_percent_completed_task
 from app.utils.exceptions import (
     IdNotFoundException,
     UserNotMemberProject,
@@ -95,9 +94,6 @@ async def create_task(
     if new_task.project_id:
         await check_user_member_project(user_id=current_user.id, project_id=new_task.project_id)
 
-    # Calculate percent completed task in project
-    calculate_percent_completed_task.delay(new_task.project_id)
-
     task = await crud.task.create(obj_in=new_task, user=current_user)
     logger.info(f"User '{current_user.id}' created new task: '{task.id}'")
 
@@ -150,9 +146,6 @@ async def update_task_by_id(
     task_updated = await crud.task.update(obj_new=task, obj_current=current_task)
     logger.info(f"User '{current_user.id}' updated task: '{task_id}'")
 
-    # Calculate percent completed task in project
-    calculate_percent_completed_task.delay(current_task.project_id)
-
     return create_response(data=task_updated)
 
 
@@ -177,9 +170,6 @@ async def remove_task_by_id(
 
     task = await crud.task.remove(id=task_id)
     logger.info(f"User '{current_user.id}' deleted task: '{task_id}'")
-
-    # Calculate percent completed task in project
-    calculate_percent_completed_task.delay(current_task.project_id)
 
     return create_response(data=task)
 
