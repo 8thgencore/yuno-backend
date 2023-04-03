@@ -58,7 +58,7 @@ celery = "^5.2.7"
 flower = "^1.2.0"
 watchfiles = "^0.19.0"
 # Mail
-fastapi-mail = "^1.2.6"
+fastapi-mail = "^1.2.7"
 # Logger
 loguru = "^0.6.0"
 # Cryptography
@@ -71,7 +71,7 @@ yesqa = "^1.4.0"
 httpx = "^0.23.3"
 pytest = "^7.2.2"
 black = "^23.3.0"
-ruff = "^0.0.258"
+ruff = "^0.0.260"
 interrogate = "^1.5.0"
 pre-commit = "^3.2.1"
 
