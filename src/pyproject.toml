@@ -38,7 +38,7 @@ python = "^3.11"
 # FastApi and Extencions
 fastapi = { extras = ["all"], version = "^0.95.0" }
 fastapi-cache2 = { extras = ["redis"], version = "^0.2.1" }
-fastapi-pagination = { extras = ["sqlalchemy"], version = "^0.11.4" }
+fastapi-pagination = { extras = ["sqlalchemy"], version = "^0.12.1" }
 fastapi-async-sqlalchemy = "^0.3.14"
 python-multipart = "^0.0.6"
 asyncer = "^0.0.2"
@@ -47,7 +47,7 @@ uvicorn = "^0.21.1"
 gunicorn = "^20.1.0"
 # Database
 sqlmodel = "^0.0.8"
-alembic = "^1.10.2"
+alembic = "^1.10.3"
 asyncpg = "^0.27.0"
 # For S3
 minio = "^7.1.14"
@@ -66,12 +66,12 @@ python-jose = { extras = ["cryptography"], version = "^3.3.0" }
 passlib = { extras = ["bcrypt"], version = "^1.7.4" }
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.1.1"
+mypy = "^1.2.0"
 yesqa = "^1.4.0"
 httpx = "^0.23.3"
-pytest = "^7.2.2"
+pytest = "^7.3.0"
 black = "^23.3.0"
-ruff = "^0.0.260"
+ruff = "^0.0.261"
 interrogate = "^1.5.0"
 pre-commit = "^3.2.1"
 
