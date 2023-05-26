@@ -10,8 +10,6 @@ services:
     restart: unless-stopped
     expose:
       - 8111
-    env_file:
-      - .env
     depends_on:
       - db
     networks:
@@ -27,8 +25,6 @@ services:
       - ./scripts/sql:/docker-entrypoint-initdb.d
     expose:
       - 5432
-    env_file:
-      - .env
     environment:
       - POSTGRES_USER=${DB_USER:?DB_USER variable is not set}
       - POSTGRES_PASSWORD=${DB_PASSWORD:?DB_PASSWORD variable is not set}
