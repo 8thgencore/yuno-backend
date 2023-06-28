@@ -38,8 +38,10 @@ help:
 	@echo "        Run production docker compose."
 	@echo "    init-db"
 	@echo "        Init database with sample data."	
-	@echo "    add-dev-migration"
-	@echo "        Add new database migration using alembic."
+	@echo "    migrations"
+	@echo "        Creates a new migration script autogenerate feature."
+	@echo "    migrate"
+	@echo "        Applies the migration to the database."
 	@echo "    pgadmin-run"
 	@echo "        Run pgadmin4."	
 	@echo "    pgadmin-load-server"
@@ -105,10 +107,11 @@ lint-fix:
 	cd src && \
 	poetry run ruff app --fix
 
-add-dev-migration:
-	docker compose -f docker-compose.yml exec web alembic revision --autogenerate && \
-	docker compose -f docker-compose.yml exec web alembic upgrade head && \
-	echo "Migration added and applied."
+migrations:
+	docker compose -f docker-compose.yml exec web alembic revision --autogenerate
+
+migrate:
+	docker compose -f docker-compose.yml exec web alembic upgrade head 
 
 pgadmin-run:
 	echo "$$SERVERS_JSON" > ./pgadmin/servers.json && \

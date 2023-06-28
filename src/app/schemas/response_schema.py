@@ -17,13 +17,13 @@ class PageBase(Page[T], Generic[T]):
 
 
 class IResponseBase(GenericModel, Generic[T]):
-    message: str = ""
+    message: str | None = ""
     meta: dict = {}
     data: T | None
 
 
 class IResponsePage(AbstractPage[T], Generic[T]):
-    message: str = ""
+    message: str | None = ""
     meta: dict = {}
     data: PageBase[T]
 
@@ -55,32 +55,34 @@ class IResponsePage(AbstractPage[T], Generic[T]):
 
 
 class IGetResponseBase(IResponseBase[DataType], Generic[DataType]):
-    message: str = "Data got correctly"
+    message: str | None = "Data got correctly"
 
 
 class IGetResponsePaginated(IResponsePage[DataType], Generic[DataType]):
-    message: str = "Data got correctly"
+    message: str | None = "Data got correctly"
 
 
 class IPostResponseBase(IResponseBase[DataType], Generic[DataType]):
-    message: str = "Data created correctly"
+    message: str | None = "Data created correctly"
 
 
 class IPutResponseBase(IResponseBase[DataType], Generic[DataType]):
-    message: str = "Data updated correctly"
+    message: str | None = "Data updated correctly"
 
 
 class IDeleteResponseBase(IResponseBase[DataType], Generic[DataType]):
-    message: str = "Data deleted correctly"
+    message: str | None = "Data deleted correctly"
 
 
 def create_response(
     data: DataType | None,
-    message: str | None = "",
+    message: str | None = None,
     meta: dict | Any | None = {},
 ) -> dict[str, DataType] | DataType:
     if isinstance(data, IResponsePage):
-        data.message = "Data paginated correctly" if not message else message
+        data.message = "Data paginated correctly" if message is None else message
         data.meta = meta
         return data
+    if message is None:
+        return {"data": data, "meta": meta}
     return {"data": data, "message": message, "meta": meta}

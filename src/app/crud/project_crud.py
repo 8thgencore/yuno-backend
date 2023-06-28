@@ -17,7 +17,11 @@ from app.schemas.task_schema import ITaskRead
 
 class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
     async def create(
-        self, *, obj_in: IProjectCreate, user: User, db_session: AsyncSession | None = None
+        self,
+        *,
+        obj_in: IProjectCreate,
+        user: User,
+        db_session: AsyncSession | None = None,
     ) -> Project:
         db_session = db_session or super().get_db().session
 
