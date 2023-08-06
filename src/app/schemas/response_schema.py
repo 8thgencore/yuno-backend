@@ -4,6 +4,7 @@ from typing import Any, Generic, TypeVar
 
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage, AbstractParams
+from pydantic import Field
 from pydantic.generics import GenericModel
 
 DataType = TypeVar("DataType")
@@ -12,8 +13,14 @@ T = TypeVar("T")
 
 class PageBase(Page[T], Generic[T]):
     pages: int
-    next_page: int | None
-    previous_page: int | None
+    previous_page: int | None = Field(
+        None,
+        description="Page number of the previous page",
+    )
+    next_page: int | None = Field(
+        None,
+        description="Page number of the next page",
+    )
 
 
 class IResponseBase(GenericModel, Generic[T]):
@@ -42,7 +49,7 @@ class IResponsePage(AbstractPage[T], Generic[T]):
             pages = 0
 
         return cls(
-            data=PageBase(
+            data=PageBase[T](
                 items=items,
                 page=params.page,
                 size=params.size,
