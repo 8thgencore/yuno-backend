@@ -1,4 +1,5 @@
 from datetime import datetime, time, timedelta
+from enum import Enum
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -10,10 +11,18 @@ from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
 from app.core import logging
 
 
+class ModeEnum(str, Enum):
+    development = "development"
+    production = "production"
+    testing = "testing"
+
+
 class Settings(BaseSettings):
     # --------------------------------------------------
     # > Application
     # --------------------------------------------------
+    MODE: ModeEnum = ModeEnum.development
+
     APP_TITLE: str = "yuno"
     APP_VERSION: str = "1.0.0"
     APP_DESCRIPTION: str = "My app"
