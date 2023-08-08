@@ -9,7 +9,7 @@ services:
     command: /start
     restart: unless-stopped
     expose:
-      - 8111
+      - 8070
     env_file:
       - .env
     depends_on:
