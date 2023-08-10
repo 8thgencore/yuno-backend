@@ -36,6 +36,8 @@ help:
 	@echo "        Run production docker compose."
 	@echo "    stop-prod"
 	@echo "        Run production docker compose."
+	@echo "    pytest"
+	@echo "        Run pytest."	
 	@echo "    init-db"
 	@echo "        Init database with sample data."	
 	@echo "    migrations"
@@ -82,6 +84,9 @@ run-prod:
 
 stop-prod:
 	docker compose -f docker-compose.prod.yml down
+
+pytest:
+	docker compose -f docker-compose.yml exec web pytest
 
 init-db:
 	docker compose -f docker-compose.yml exec web python -m app.initial_data && \
