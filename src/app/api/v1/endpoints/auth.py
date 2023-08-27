@@ -165,10 +165,7 @@ async def login_access_token(
             settings.ACCESS_TOKEN_EXPIRE_MINUTES,
         )
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-    }
+    return TokenRead(access_token=access_token, token_type='bearer')
 
 
 @router.post("/refresh-token", status_code=201)

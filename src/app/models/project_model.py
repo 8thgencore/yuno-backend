@@ -5,6 +5,8 @@ from sqlmodel import Field, Relationship, SQLModel
 from app.models.base_uuid_model import BaseUUIDModel
 from app.models.links_model import ProjectUserLink
 from app.models.user_model import User
+from app.models.task_model import Task
+
 
 
 class ProjectBase(SQLModel):

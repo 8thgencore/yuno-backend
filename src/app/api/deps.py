@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from redis.asyncio import Redis
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel.ext.asyncio.session import AsyncSession
-
+from typing import Callable
 from app import crud
 from app.core import security
 from app.core.config import settings
@@ -55,7 +55,7 @@ async def get_general_meta() -> IMetaGeneral:
     return IMetaGeneral(roles=current_roles)
 
 
-def get_current_user(required_roles: list[str] = None) -> User:
+def get_current_user(required_roles: list[str] = None) -> Callable[[], User]:
     async def current_user(
         token: str = Depends(reusable_oauth2),
         redis_client: Redis = Depends(get_redis_client),
