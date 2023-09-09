@@ -1,17 +1,18 @@
 from collections.abc import AsyncGenerator
+from typing import Callable
 
 import redis.asyncio as aioredis
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt
-from pydantic import ValidationError
+from jwt import DecodeError, ExpiredSignatureError, MissingRequiredClaimError
+from loguru import logger
 from redis.asyncio import Redis
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app import crud
-from app.core import security
 from app.core.config import settings
+from app.core.security import decode_token
 from app.db.session import SessionLocal
 from app.models.user_model import User
 from app.schemas.common_schema import IMetaGeneral, TokenType
@@ -55,21 +56,34 @@ async def get_general_meta() -> IMetaGeneral:
     return IMetaGeneral(roles=current_roles)
 
 
-def get_current_user(required_roles: list[str] = None) -> User:
+def get_current_user(required_roles: list[str] = None) -> Callable[[], User]:
     async def current_user(
-        token: str = Depends(reusable_oauth2),
+        access_token: str = Depends(reusable_oauth2),
         redis_client: Redis = Depends(get_redis_client),
     ) -> User:
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[security.ALGORITHM])
-        except (jwt.JWTError, ValidationError):
+            payload = decode_token(access_token)
+        except ExpiredSignatureError:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Could not validate credentials",
+                detail="Your token has expired. Please log in again.",
             )
+        except DecodeError:
+            logger.info("Cannot decode token %s", access_token)
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Error when decoding the token. Please check your request.",
+            )
+        except MissingRequiredClaimError as e:
+            logger.info("Missing claim from token %s. Error %s", access_token, e)
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="There is no required field in your token. Please contact the administrator.",
+            )
+
         user_id = payload["sub"]
         valid_access_tokens = await get_valid_tokens(redis_client, user_id, TokenType.ACCESS)
-        if valid_access_tokens and token not in valid_access_tokens:
+        if valid_access_tokens and access_token not in valid_access_tokens:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Could not validate credentials",

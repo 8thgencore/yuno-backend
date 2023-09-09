@@ -29,7 +29,7 @@ class IResponseBase(GenericModel, Generic[T]):
     data: T | None
 
 
-class IResponsePage(AbstractPage[T], Generic[T]):
+class IGetResponsePaginated(AbstractPage[T], Generic[T]):
     message: str | None = ""
     meta: dict = {}
     data: PageBase[T]
@@ -65,10 +65,6 @@ class IGetResponseBase(IResponseBase[DataType], Generic[DataType]):
     message: str | None = "Data got correctly"
 
 
-class IGetResponsePaginated(IResponsePage[DataType], Generic[DataType]):
-    message: str | None = "Data got correctly"
-
-
 class IPostResponseBase(IResponseBase[DataType], Generic[DataType]):
     message: str | None = "Data created correctly"
 
@@ -82,11 +78,18 @@ class IDeleteResponseBase(IResponseBase[DataType], Generic[DataType]):
 
 
 def create_response(
-    data: DataType | None,
+    data: DataType,
     message: str | None = None,
     meta: dict | Any | None = {},
-) -> dict[str, DataType] | DataType:
-    if isinstance(data, IResponsePage):
+) -> (
+    IResponseBase[DataType]
+    | IGetResponsePaginated[DataType]
+    | IGetResponseBase[DataType]
+    | IPutResponseBase[DataType]
+    | IDeleteResponseBase[DataType]
+    | IPostResponseBase[DataType]
+):
+    if isinstance(data, IGetResponsePaginated):
         data.message = "Data paginated correctly" if message is None else message
         data.meta = meta
         return data

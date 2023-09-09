@@ -2,14 +2,10 @@ import random
 from datetime import datetime, timedelta
 from typing import Any
 
-from jose import jwt
-from passlib.context import CryptContext
+import bcrypt
+import jwt
 
 from app.core.config import settings
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-ALGORITHM = settings.JWT_ALGORITHM
 
 
 def create_access_token(subject: str | Any, expires_delta: timedelta = None) -> str:
@@ -18,8 +14,12 @@ def create_access_token(subject: str | Any, expires_delta: timedelta = None) -> 
     else:
         expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = {"exp": expire, "sub": str(subject), "type": "access"}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+
+    return jwt.encode(
+        payload=to_encode,
+        key=settings.SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+    )
 
 
 def create_refresh_token(subject: str | Any, expires_delta: timedelta = None) -> str:
@@ -28,8 +28,12 @@ def create_refresh_token(subject: str | Any, expires_delta: timedelta = None) ->
     else:
         expire = datetime.utcnow() + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
     to_encode = {"exp": expire, "sub": str(subject), "type": "refresh"}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+
+    return jwt.encode(
+        payload=to_encode,
+        key=settings.SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+    )
 
 
 def create_reset_token(subject: str | Any, expires_delta: timedelta = None) -> str:
@@ -38,20 +42,41 @@ def create_reset_token(subject: str | Any, expires_delta: timedelta = None) -> s
     else:
         expire = datetime.utcnow() + timedelta(minutes=settings.RESET_TOKEN_EXPIRE_MINUTES)
     to_encode = {"exp": expire, "sub": str(subject), "type": "reset"}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+
+    return jwt.encode(
+        payload=to_encode,
+        key=settings.SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+    )
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+def decode_token(token: str) -> dict[str, Any]:
+    return jwt.decode(
+        jwt=token,
+        key=settings.SECRET_KEY,
+        algorithms=[settings.JWT_ALGORITHM],
+    )
 
 
-def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+def verify_password(plain_password: str | bytes, hashed_password: str | bytes) -> bool:
+    if isinstance(plain_password, str):
+        plain_password = plain_password.encode()
+    if isinstance(hashed_password, str):
+        hashed_password = hashed_password.encode()
+
+    return bcrypt.checkpw(plain_password, hashed_password)
+
+
+def get_password_hash(plain_password: str | bytes) -> str:
+    if isinstance(plain_password, str):
+        plain_password = plain_password.encode()
+
+    return bcrypt.hashpw(plain_password, bcrypt.gensalt()).decode()
 
 
 def create_otp_code(length: int) -> str:
     otp = ""
     for _ in range(length):
         otp += str(random.randint(0, 9))
+
     return otp

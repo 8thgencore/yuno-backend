@@ -11,11 +11,11 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_pagination import add_pagination
 from loguru import logger
-from sqlalchemy.pool import NullPool, QueuePool
+from sqlalchemy.pool import QueuePool
 
 from app.api.deps import get_redis_client
 from app.api.v1.api import api_router as api_router_v1
-from app.core.config import ModeEnum, load_log_config, settings
+from app.core.config import load_log_config, settings
 from app.utils.celery_utils import create_celery
 
 
@@ -59,8 +59,7 @@ def create_application() -> FastAPI:
             "pool_pre_ping": True,
             "pool_size": 4,
             "max_overflow": 64,
-            # Asincio pytest works with NullPool
-            "poolclass": NullPool if settings.MODE == ModeEnum.testing else QueuePool,
+            "poolclass": QueuePool,
         },
     )
 
