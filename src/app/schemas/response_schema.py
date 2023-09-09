@@ -78,7 +78,7 @@ class IDeleteResponseBase(IResponseBase[DataType], Generic[DataType]):
 
 
 def create_response(
-    data: DataType ,
+    data: DataType,
     message: str | None = None,
     meta: dict | Any | None = {},
 ) -> (

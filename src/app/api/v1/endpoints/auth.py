@@ -2,16 +2,15 @@ from datetime import timedelta
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from jose import jwt
+from jwt import DecodeError, ExpiredSignatureError, MissingRequiredClaimError
 from loguru import logger
-from pydantic import ValidationError
 from redis.asyncio import Redis
 
 from app import crud
 from app.api import deps
 from app.core import security
 from app.core.config import settings
-from app.core.security import get_password_hash, verify_password
+from app.core.security import decode_token, get_password_hash, verify_password
 from app.deps import user_deps
 from app.models.user_model import User
 from app.schemas.auth_schema import (
@@ -165,7 +164,7 @@ async def login_access_token(
             settings.ACCESS_TOKEN_EXPIRE_MINUTES,
         )
 
-    return TokenRead(access_token=access_token, token_type='bearer')
+    return TokenRead(access_token=access_token, token_type="bearer")
 
 
 @router.post("/refresh-token", status_code=201)
@@ -185,13 +184,24 @@ async def get_new_access_token(
       - `HTTPException`: If the refresh token is invalid, has expired or is not associated with the user.
     """
     try:
-        payload = jwt.decode(
-            body.refresh_token,
-            settings.SECRET_KEY,
-            algorithms=[security.ALGORITHM],
+        payload = decode_token(body.refresh_token)
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your token has expired. Please log in again.",
         )
-    except (jwt.JWTError, ValidationError):
-        raise HTTPException(status_code=403, detail="Refresh token invalid")
+    except DecodeError:
+        logger.info("Cannot decode token %s", body.refresh_token)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Error when decoding the token. Please check your request.",
+        )
+    except MissingRequiredClaimError as e:
+        logger.info("Missing claim from token %s. Error %s", body.refresh_token, e)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="There is no required field in your token. Please contact the administrator.",
+        )
 
     if payload["type"] == "refresh":
         user_id = payload["sub"]
@@ -404,13 +414,24 @@ async def reset_password(
       - `HTTPException`: If the current password is invalid or if the new password is the same as the current password.
     """
     try:
-        payload = jwt.decode(
-            body.reset_token,
-            settings.SECRET_KEY,
-            algorithms=[security.ALGORITHM],
+        payload = decode_token(body.reset_token)
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your token has expired. Please log in again.",
         )
-    except (jwt.JWTError, ValidationError):
-        raise HTTPException(status_code=403, detail="Reset token invalid")
+    except DecodeError:
+        logger.info("Cannot decode token %s", body.refresh_token)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Error when decoding the token. Please check your request.",
+        )
+    except MissingRequiredClaimError as e:
+        logger.info("Missing claim from token %s. Error %s", body.refresh_token, e)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="There is no required field in your token. Please contact the administrator.",
+        )
 
     if payload["type"] == "reset":
         user_id = payload["sub"]

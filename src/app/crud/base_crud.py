@@ -2,7 +2,6 @@ from typing import Any, Generic, TypeVar
 from uuid import UUID
 
 from fastapi import HTTPException
-from fastapi.encoders import jsonable_encoder
 from fastapi_async_sqlalchemy import db
 from fastapi_async_sqlalchemy.middleware import DBSessionMeta
 from fastapi_pagination import Page, Params
@@ -174,7 +173,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 exclude_unset=True
             )  # This tells Pydantic to not include the values that were not sent
 
-        if field in update_data:
+        for field in update_data:
             setattr(obj_current, field, update_data[field])
 
         db_session.add(obj_current)
