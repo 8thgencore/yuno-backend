@@ -89,8 +89,7 @@ async def read_users_list(
 
 @router.get("/list/by_created_at")
 async def get_user_list_order_by_created_at(
-    order: IOrderEnum
-    | None = Query(
+    order: IOrderEnum | None = Query(
         default=IOrderEnum.ascendent,
         description="It is optional. Default is ascendent",
     ),
