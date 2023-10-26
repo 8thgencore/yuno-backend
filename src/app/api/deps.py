@@ -1,5 +1,4 @@
-from collections.abc import AsyncGenerator
-from collections.abc import Callable
+from collections.abc import AsyncGenerator, Callable
 
 import redis.asyncio as aioredis
 from fastapi import Depends, HTTPException, status
