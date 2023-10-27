@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastapi import HTTPException, status
 
@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 class UserSelfDeleteException(HTTPException):
     def __init__(
         self,
-        headers: Optional[Dict[str, Any]] = None,
+        headers: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -18,8 +18,8 @@ class UserSelfDeleteException(HTTPException):
 class EmailNotFoundException(HTTPException):
     def __init__(
         self,
-        email: Optional[str] = None,
-        headers: Optional[Dict[str, Any]] = None,
+        email: str | None = None,
+        headers: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,

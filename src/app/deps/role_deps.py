@@ -1,7 +1,7 @@
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import Path, Query
-from typing_extensions import Annotated
 
 from app import crud
 from app.models.role_model import Role

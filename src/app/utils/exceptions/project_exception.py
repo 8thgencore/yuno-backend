@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastapi import HTTPException, status
 
@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 class UserNotCreatorProject(HTTPException):
     def __init__(
         self,
-        headers: Optional[Dict[str, Any]] = None,
+        headers: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -18,7 +18,7 @@ class UserNotCreatorProject(HTTPException):
 class UserNotMemberProject(HTTPException):
     def __init__(
         self,
-        headers: Optional[Dict[str, Any]] = None,
+        headers: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -30,7 +30,7 @@ class UserNotMemberProject(HTTPException):
 class UserAlredyMemberProject(HTTPException):
     def __init__(
         self,
-        headers: Optional[Dict[str, Any]] = None,
+        headers: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,

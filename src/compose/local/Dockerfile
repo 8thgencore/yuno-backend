@@ -10,7 +10,7 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends curl git build-essential netcat gcc postgresql \
   && apt-get autoremove -y
 
-# Install poetry using the official script 
+# Install poetry using the official script
 ENV POETRY_HOME="/opt/poetry"
 RUN curl -sSL https://install.python-poetry.org | python3 -
 

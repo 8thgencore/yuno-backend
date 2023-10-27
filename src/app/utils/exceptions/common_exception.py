@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generic, Optional, Type, TypeVar
+from typing import Any, Generic, TypeVar
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -11,7 +11,7 @@ class ContentNoChangeException(HTTPException):
     def __init__(
         self,
         detail: Any = None,
-        headers: Optional[Dict[str, Any]] = None,
+        headers: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=detail, headers=headers)
 
@@ -19,9 +19,9 @@ class ContentNoChangeException(HTTPException):
 class IdNotFoundException(HTTPException, Generic[ModelType]):
     def __init__(
         self,
-        model: Type[ModelType],
-        id: Optional[UUID | str] = None,
-        headers: Optional[Dict[str, Any]] = None,
+        model: type[ModelType],
+        id: UUID | str | None = None,
+        headers: dict[str, Any] | None = None,
     ) -> None:
         if id:
             super().__init__(
@@ -41,9 +41,9 @@ class IdNotFoundException(HTTPException, Generic[ModelType]):
 class NameNotFoundException(HTTPException, Generic[ModelType]):
     def __init__(
         self,
-        model: Type[ModelType],
-        name: Optional[str] = None,
-        headers: Optional[Dict[str, Any]] = None,
+        model: type[ModelType],
+        name: str | None = None,
+        headers: dict[str, Any] | None = None,
     ) -> None:
         if name:
             super().__init__(
@@ -62,9 +62,9 @@ class NameNotFoundException(HTTPException, Generic[ModelType]):
 class NameExistException(HTTPException, Generic[ModelType]):
     def __init__(
         self,
-        model: Type[ModelType],
-        name: Optional[str] = None,
-        headers: Optional[Dict[str, Any]] = None,
+        model: type[ModelType],
+        name: str | None = None,
+        headers: dict[str, Any] | None = None,
     ) -> None:
         if name:
             super().__init__(
