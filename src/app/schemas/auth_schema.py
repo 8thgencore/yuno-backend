@@ -10,7 +10,7 @@ class IAuthLogin(BaseModel):
     password: str
 
     @validator("email", pre=True, check_fields=False, always=True)
-    def validate_email(cls, value: str, values: Any) -> EmailStr():
+    def validate_email(cls, value: str, values: Any) -> str:
         return value.lower()
 
 
@@ -22,7 +22,7 @@ class IAuthRegister(BaseModel):
     password: str
 
     @validator("email", pre=True, check_fields=False, always=True)
-    def validate_email(cls, value: str, values: Any) -> EmailStr():
+    def validate_email(cls, value: str, values: Any) -> str:
         return value.lower()
 
 
@@ -39,7 +39,7 @@ class IAuthForgotPassword(BaseModel):
     email: str = Field(description="Email address of a user")
 
     @validator("email", pre=True, check_fields=False, always=True)
-    def validate_email(cls, value: str, values: Any) -> EmailStr():
+    def validate_email(cls, value: str, values: Any) -> str:
         return value.lower()
 
 
@@ -50,7 +50,7 @@ class IAuthOtpCode(BaseModel):
     otp: str = Field(description="OTP code")
 
     @validator("email", pre=True, check_fields=False, always=True)
-    def validate_email(cls, value: str, values: Any) -> EmailStr():
+    def validate_email(cls, value: str, values: Any) -> str:
         return value.lower()
 
 
