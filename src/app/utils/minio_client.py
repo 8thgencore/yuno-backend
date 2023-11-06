@@ -4,9 +4,8 @@ from datetime import timedelta
 from io import BytesIO
 from typing import Any
 
-from pydantic import BaseModel
-
 from minio import Minio
+from pydantic import BaseModel
 
 
 class IMinioResponse(BaseModel):
