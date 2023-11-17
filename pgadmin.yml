@@ -20,12 +20,14 @@ services:
       - "/bin/sh"
       - "-c"
       - "/bin/echo '${DB_HOST}:${DB_PORT}:*:${DB_USER}:${DB_PASSWORD}' > /tmp/pgpassfile && /entrypoint.sh"
-    networks:
-      - external_network
+    # Uncommenting for production
+    # networks:
+    #   - external_network
 
 volumes:
   pgadmin_data:
 
-networks:
-  external_network:
-    external: true
+# Uncommenting for production
+# networks:
+#   external_network:
+#     external: true
