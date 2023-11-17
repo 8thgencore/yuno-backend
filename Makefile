@@ -51,11 +51,11 @@ help:
 	@echo "    pgadmin-clean"
 	@echo "        Clean pgadmin4 data."
 	@echo "    formatter"
-	@echo "        Apply black formatting to code."
+	@echo "        Apply ruff formatting to code."
 	@echo "    mypy"
 	@echo "        Static type checker."
 	@echo "    lint"
-	@echo "        Lint code with ruff, and check if black formatter should be applied."
+	@echo "        Lint code with ruff, and check if ruff formatter should be applied."
 	@echo "    lint-watch"
 	@echo "        Lint code with ruff in watch mode."
 	@echo "    lint-fix"
@@ -94,7 +94,7 @@ init-db:
 
 formatter:
 	cd src && \
-	poetry run black app
+	poetry run ruff format app
 
 mypy:
 	cd src && \
@@ -102,7 +102,7 @@ mypy:
 
 lint:
 	cd src && \
-	poetry run ruff app && poetry run black --check app
+	poetry run ruff app && poetry run ruff format --check app
 
 lint-watch:
 	cd src && \
