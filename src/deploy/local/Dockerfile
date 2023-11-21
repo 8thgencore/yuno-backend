@@ -47,17 +47,17 @@ FROM install as app-image
 WORKDIR /usr/src
 
 # run fastapi project
-COPY ./compose/local/start /start
+COPY ./deploy/local/start /start
 RUN sed -i 's/\r$//g' /start \
   && chmod +x /start
 
 # run celery worker
-COPY ./compose/local/celery/worker/start /start-celeryworker
+COPY ./deploy/local/celery/worker/start /start-celeryworker
 RUN sed -i 's/\r$//g' /start-celeryworker \
   && chmod +x /start-celeryworker
 
 # run flower
-COPY ./compose/local/celery/flower/start /start-flower
+COPY ./deploy/local/celery/flower/start /start-flower
 RUN sed -i 's/\r$//g' /start-flower \
   && chmod +x /start-flower
 
