@@ -1,4 +1,4 @@
-from pydantic import root_validator
+from pydantic import model_validator
 
 from app.models.image_media_model import ImageMedia, ImageMediaBase
 from app.models.media_model import Media
@@ -24,7 +24,8 @@ class IImageMediaRead(ImageMediaBase):
 class IImageMediaReadCombined(ImageMediaBase):
     link: str | None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def combine_attributes(cls, values):
         link_fields = {"link": values.get("link", None)}
         if "media" in values:

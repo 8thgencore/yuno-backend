@@ -35,7 +35,7 @@ class UTCDatetime(datetime):
     """parse a datetime and convert in into UTC format"""
 
     @classmethod
-    def __get_validators__(cls) -> Any:
+    def __get_pydantic_core_schema__(cls) -> Any:
         yield cls.validate
 
     @classmethod

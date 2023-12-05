@@ -1,7 +1,7 @@
 from enum import Enum
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from app.models.user_model import UserBase
 from app.schemas.image_media_schema import IImageMediaRead
@@ -11,9 +11,7 @@ from app.utils.partial import optional
 
 class IUserCreate(UserBase):
     password: str | None
-
-    class Config:
-        hashed_password = None
+    model_config = ConfigDict(hashed_password=None)
 
 
 # All these fields are optional

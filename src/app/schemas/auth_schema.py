@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class IAuthLogin(BaseModel):
@@ -9,7 +9,8 @@ class IAuthLogin(BaseModel):
     email: EmailStr
     password: str
 
-    @validator("email", pre=True, check_fields=False, always=True)
+    @field_validator("email", mode="before", check_fields=False)
+    @classmethod
     def validate_email(cls, value: str, values: Any) -> str:
         return value.lower()
 
@@ -21,7 +22,8 @@ class IAuthRegister(BaseModel):
     username: str
     password: str
 
-    @validator("email", pre=True, check_fields=False, always=True)
+    @field_validator("email", mode="before", check_fields=False)
+    @classmethod
     def validate_email(cls, value: str, values: Any) -> str:
         return value.lower()
 
@@ -38,7 +40,8 @@ class IAuthForgotPassword(BaseModel):
 
     email: str = Field(description="Email address of a user")
 
-    @validator("email", pre=True, check_fields=False, always=True)
+    @field_validator("email", mode="before", check_fields=False)
+    @classmethod
     def validate_email(cls, value: str, values: Any) -> str:
         return value.lower()
 
@@ -49,7 +52,8 @@ class IAuthOtpCode(BaseModel):
     email: str = Field(description="Email address of a user")
     otp: str = Field(description="OTP code")
 
-    @validator("email", pre=True, check_fields=False, always=True)
+    @field_validator("email", mode="before", check_fields=False)
+    @classmethod
     def validate_email(cls, value: str, values: Any) -> str:
         return value.lower()
 

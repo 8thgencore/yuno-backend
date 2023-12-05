@@ -4,8 +4,7 @@ from typing import Any, Generic, TypeVar
 
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage, AbstractParams
-from pydantic import Field
-from pydantic.generics import GenericModel
+from pydantic import BaseModel, Field
 
 DataType = TypeVar("DataType")
 T = TypeVar("T")
@@ -23,7 +22,7 @@ class PageBase(Page[T], Generic[T]):
     )
 
 
-class IResponseBase(GenericModel, Generic[T]):
+class IResponseBase(BaseModel, Generic[T]):
     message: str | None = ""
     meta: dict = {}
     data: T | None

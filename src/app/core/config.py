@@ -6,7 +6,8 @@ from typing import Any
 
 from fastapi_mail import ConnectionConfig
 from loguru import logger
-from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
+from pydantic import AnyHttpUrl, PostgresDsn, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core import logging
 
@@ -51,7 +52,8 @@ class Settings(BaseSettings):
 
     ASYNC_DB_URI: str | None
 
-    @validator("ASYNC_DB_URI", pre=True)
+    @field_validator("ASYNC_DB_URI", mode="before")
+    @classmethod
     def assemble_db_connection(cls, v: str | None, values: dict[str, Any]) -> Any:
         if isinstance(v, str):
             return v
@@ -101,7 +103,8 @@ class Settings(BaseSettings):
     EMAIL_TEMPLATES_DIR: Path | str | None = Path(__file__).parent.parent / "templates/"
     EMAIL_CONNECTION_CONFIG: ConnectionConfig | None = None
 
-    @validator("EMAIL_CONNECTION_CONFIG", pre=True)
+    @field_validator("EMAIL_CONNECTION_CONFIG", mode="before")
+    @classmethod
     def assemble_email_config(
         cls, v: ConnectionConfig | None, values: dict[str, Any]
     ) -> ConnectionConfig | None:
@@ -123,7 +126,8 @@ class Settings(BaseSettings):
     # --------------------------------------------------
     BACKEND_CORS_ORIGINS: list[str] | list[AnyHttpUrl]
 
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
+    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+    @classmethod
     def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
@@ -131,9 +135,7 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    class Config:
-        case_sensitive = True
-        # env_file = os.path.expanduser("~/.env")
+    model_config = SettingsConfigDict(case_sensitive=True)
 
 
 class LogSettings(BaseSettings):
@@ -141,23 +143,23 @@ class LogSettings(BaseSettings):
     LOG_ROTATION: time
     LOG_RETENTION: timedelta
 
-    @validator("LOG_ROTATION", pre=True)
+    @field_validator("LOG_ROTATION", mode="before")
+    @classmethod
     def assemble_log_rotation(cls, v: str | None) -> time:
         if isinstance(v, str):
             return datetime.strptime(v, "%H:%M").time()
         else:
             return datetime.strptime("00:00", "%H:%M").time()
 
-    @validator("LOG_RETENTION", pre=True)
+    @field_validator("LOG_RETENTION", mode="before")
+    @classmethod
     def assemble_log_retention(cls, v: int | None) -> timedelta:
         if isinstance(v, int):
             return timedelta(days=v)
         else:
             return timedelta(days=3)
 
-    class Config:
-        case_sensitive = True
-        # env_file = os.path.expanduser("~/.env")
+    model_config = SettingsConfigDict(case_sensitive=True)
 
 
 @lru_cache
