@@ -9,7 +9,7 @@ from redis.asyncio import Redis
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app import crud
+from app import repository
 from app.core.config import settings
 from app.core.security import decode_token
 from app.db.session import SessionLocal
@@ -51,7 +51,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def get_general_meta() -> IMetaGeneral:
-    current_roles = await crud.role.get_multi(skip=0, limit=100)
+    current_roles = await repository.role.get_multi(skip=0, limit=100)
     return IMetaGeneral(roles=current_roles)
 
 
@@ -87,7 +87,7 @@ def get_current_user(required_roles: list[str] = None) -> Callable[[], User]:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Could not validate credentials",
             )
-        user: User = await crud.user.get(id=user_id)
+        user: User = await repository.user.get(id=user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 

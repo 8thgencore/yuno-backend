@@ -4,7 +4,7 @@ from celery import shared_task
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from loguru import logger
 
-from app.core.config import settings
+from app.core.config import MailConnectionConfig
 
 
 @shared_task(name="send_verification_email")
@@ -20,7 +20,7 @@ def send_verification_email(email_to: str, otp_code: int) -> None:
         template_body=email_body,
     )
 
-    fm = FastMail(settings.EMAIL_CONNECTION_CONFIG)
+    fm = FastMail(MailConnectionConfig())
 
     try:
         asyncio.run(fm.send_message(message, template_name="verification_email.html"))

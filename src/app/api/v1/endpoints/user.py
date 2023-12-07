@@ -5,7 +5,7 @@ from fastapi import APIRouter, Body, Depends, File, Query, Response, UploadFile,
 from fastapi_pagination import Params
 from loguru import logger
 
-from app import crud
+from app import repository
 from app.api import deps
 from app.deps import user_deps
 from app.models import User
@@ -51,7 +51,7 @@ async def update_my_data(
     if current_user.username != user.username:
         await user_deps.username_exists(user=user)
 
-    user_updated = await crud.user.update(obj_new=user, obj_current=current_user)
+    user_updated = await repository.user.update(obj_new=user, obj_current=current_user)
     logger.info(f"User '{current_user.id}' updated profile information")
 
     return create_response(data=user_updated)
@@ -67,11 +67,11 @@ async def create_user(
     Required roles:
       - admin
     """
-    role = await crud.role.get(id=user.role_id)
+    role = await repository.role.get(id=user.role_id)
     if not role:
         raise IdNotFoundException(Role, id=user.role_id)
 
-    user = await crud.user.create_with_role(obj_in=user)
+    user = await repository.user.create_with_role(obj_in=user)
 
     return create_response(data=user)
 
@@ -82,7 +82,7 @@ async def read_users_list(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IUserRead]:
     """Retrieve users. Requires admin or manager role."""
-    users = await crud.user.get_multi_paginated(params=params)
+    users = await repository.user.get_multi_paginated(params=params)
 
     return create_response(data=users)
 
@@ -97,7 +97,7 @@ async def get_user_list_order_by_created_at(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IUserRead]:
     """Gets a paginated list of users ordered by created datetime."""
-    users = await crud.user.get_multi_paginated_ordered(
+    users = await repository.user.get_multi_paginated_ordered(
         params=params,
         order=order,
         order_by="created_at",
@@ -132,7 +132,7 @@ async def update_user_by_id(
     if updated_user.username != user.username:
         await user_deps.username_exists(user=user)
 
-    user_updated = await crud.user.update(obj_new=user, obj_current=updated_user)
+    user_updated = await repository.user.update(obj_new=user, obj_current=updated_user)
 
     return create_response(data=user_updated)
 
@@ -150,7 +150,7 @@ async def remove_user_by_id(
     if current_user.id == user.id:
         raise UserSelfDeleteException()
 
-    user = await crud.user.remove(id=user.id)
+    user = await repository.user.remove(id=user.id)
 
     return create_response(data=user, message="User removed")
 
@@ -179,7 +179,7 @@ async def upload_my_image(
 
         # Add to Database
         media = IMediaCreate(title=title, description=description, path=data_file.file_name)
-        user = await crud.user.update_photo(
+        user = await repository.user.update_photo(
             user=current_user,
             image=media,
             heigth=image_modified.height,
@@ -219,7 +219,7 @@ async def upload_user_image(
             content_type=image_file.content_type,
         )
         media = IMediaCreate(title=title, description=description, path=data_file.file_name)
-        user = await crud.user.update_photo(
+        user = await repository.user.update_photo(
             user=user,
             image=media,
             heigth=image_modified.height,

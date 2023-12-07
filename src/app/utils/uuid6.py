@@ -1,9 +1,7 @@
 r"""UUID draft version objects (universally unique identifiers).
-This module provides the functions uuid6() and uuid7() for
-generating version 6 and 7 UUIDs as specified in
-https://github.com/uuid6/uuid6-ietf-draft.
-
-Repo: https://github.com/oittaa/uuid6-python
+This module provides the functions uuid6(), uuid7(), and uuid8() for
+generating version 6, 7, and 8 UUIDs as specified in
+https://github.com/ietf-wg-uuidrev/rfc4122bis
 """
 
 import secrets
@@ -14,6 +12,8 @@ import uuid
 class UUID(uuid.UUID):
     r"""UUID draft version objects"""
 
+    __slots__ = ()
+
     def __init__(
         self,
         hex: str | None = None,
@@ -23,7 +23,7 @@ class UUID(uuid.UUID):
         int: int | None = None,
         version: int | None = None,
         *,
-        is_safe=uuid.SafeUUID.unknown,
+        is_safe: uuid.SafeUUID = uuid.SafeUUID.unknown,
     ) -> None:
         r"""Create a UUID."""
 
@@ -40,7 +40,7 @@ class UUID(uuid.UUID):
         if not 0 <= int < 1 << 128:
             raise ValueError("int is out of range (need a 128-bit value)")
         if version is not None:
-            if not 6 <= version <= 7:
+            if not 6 <= version <= 8:
                 raise ValueError("illegal version number")
             # Set the variant to RFC 4122.
             int &= ~(0xC000 << 48)
@@ -59,6 +59,8 @@ class UUID(uuid.UUID):
         if self.version == 6:
             return (self.time_low << 28) | (self.time_mid << 12) | (self.time_hi_version & 0x0FFF)
         if self.version == 7:
+            return self.int >> 80
+        if self.version == 8:
             return (self.int >> 80) * 10**6 + _subsec_decode(self.subsec)
         return super().time
 
@@ -71,15 +73,28 @@ def _subsec_encode(value: int) -> int:
     return value * 2**20 // 10**6
 
 
+def uuid1_to_uuid6(uuid1: uuid.UUID) -> UUID:
+    r"""Generate a UUID version 6 object from a UUID version 1 object."""
+    if uuid1.version != 1:
+        raise ValueError("given UUID's version number must be 1")
+    h = uuid1.hex
+    h = h[13:16] + h[8:12] + h[0:5] + "6" + h[5:8] + h[16:]
+    return UUID(hex=h, is_safe=uuid1.is_safe)
+
+
 _last_v6_timestamp = None
 _last_v7_timestamp = None
+_last_v8_timestamp = None
 
 
-def uuid6(clock_seq: int | None = None) -> UUID:
+def uuid6(node: int | None = None, clock_seq: int | None = None) -> UUID:
     r"""UUID version 6 is a field-compatible version of UUIDv1, reordered for
-    improved DB locality.  It is expected that UUIDv6 will primarily be
-    used in contexts where there are existing v1 UUIDs.  Systems that do
+    improved DB locality. It is expected that UUIDv6 will primarily be
+    used in contexts where there are existing v1 UUIDs. Systems that do
     not involve legacy UUIDv1 SHOULD consider using UUIDv7 instead.
+
+    If 'node' is not given, a random 48-bit number is chosen.
+
     If 'clock_seq' is given, it is used as the sequence number;
     otherwise a random 14-bit sequence number is chosen."""
 
@@ -94,38 +109,57 @@ def uuid6(clock_seq: int | None = None) -> UUID:
     _last_v6_timestamp = timestamp
     if clock_seq is None:
         clock_seq = secrets.randbits(14)  # instead of stable storage
-    node = secrets.randbits(48)
+    if node is None:
+        node = secrets.randbits(48)
     time_high_and_time_mid = (timestamp >> 12) & 0xFFFFFFFFFFFF
     time_low_and_version = timestamp & 0x0FFF
     uuid_int = time_high_and_time_mid << 80
     uuid_int |= time_low_and_version << 64
     uuid_int |= (clock_seq & 0x3FFF) << 48
-    uuid_int |= node
+    uuid_int |= node & 0xFFFFFFFFFFFF
     return UUID(int=uuid_int, version=6)
 
 
 def uuid7() -> UUID:
     r"""UUID version 7 features a time-ordered value field derived from the
     widely implemented and well known Unix Epoch timestamp source, the
-    number of milliseconds seconds since midnight 1 Jan 1970 UTC, leap
-    seconds excluded.  As well as improved entropy characteristics over
-    versions 1 or 6.
+    number of milliseconds since midnight 1 Jan 1970 UTC, leap seconds
+    excluded. As well as improved entropy characteristics over versions
+    1 or 6.
+
     Implementations SHOULD utilize UUID version 7 over UUID version 1 and
     6 if possible."""
 
     global _last_v7_timestamp
 
     nanoseconds = time.time_ns()
-    if _last_v7_timestamp is not None and nanoseconds <= _last_v7_timestamp:
-        nanoseconds = _last_v7_timestamp + 1
-    _last_v7_timestamp = nanoseconds
+    timestamp_ms = nanoseconds // 10**6
+    if _last_v7_timestamp is not None and timestamp_ms <= _last_v7_timestamp:
+        timestamp_ms = _last_v7_timestamp + 1
+    _last_v7_timestamp = timestamp_ms
+    uuid_int = (timestamp_ms & 0xFFFFFFFFFFFF) << 80
+    uuid_int |= secrets.randbits(76)
+    return UUID(int=uuid_int, version=7)
+
+
+def uuid8() -> UUID:
+    r"""UUID version 8 features a time-ordered value field derived from the
+    widely implemented and well known Unix Epoch timestamp source, the
+    number of nanoseconds since midnight 1 Jan 1970 UTC, leap seconds
+    excluded."""
+
+    global _last_v8_timestamp
+
+    nanoseconds = time.time_ns()
+    if _last_v8_timestamp is not None and nanoseconds <= _last_v8_timestamp:
+        nanoseconds = _last_v8_timestamp + 1
+    _last_v8_timestamp = nanoseconds
     timestamp_ms, timestamp_ns = divmod(nanoseconds, 10**6)
     subsec = _subsec_encode(timestamp_ns)
     subsec_a = subsec >> 8
     subsec_b = subsec & 0xFF
-    rand = secrets.randbits(54)
     uuid_int = (timestamp_ms & 0xFFFFFFFFFFFF) << 80
     uuid_int |= subsec_a << 64
     uuid_int |= subsec_b << 54
-    uuid_int |= rand
-    return UUID(int=uuid_int, version=7)
+    uuid_int |= secrets.randbits(54)
+    return UUID(int=uuid_int, version=8)

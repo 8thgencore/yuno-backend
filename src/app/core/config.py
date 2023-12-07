@@ -91,37 +91,6 @@ class Settings(BaseSettings):
     WS_MESSAGE_QUEUE: str
 
     # --------------------------------------------------
-    # > Mail
-    # --------------------------------------------------
-    MAIL_USERNAME: str | None
-    MAIL_PASSWORD: str | None
-    MAIL_FROM: str | None
-    MAIL_PORT: int | None
-    MAIL_SERVER: str | None
-    MAIL_STARTTLS: bool | None
-    MAIL_SSL_TLS: bool | None
-    EMAIL_TEMPLATES_DIR: Path | str | None = Path(__file__).parent.parent / "templates/"
-    EMAIL_CONNECTION_CONFIG: ConnectionConfig | None = None
-
-    @field_validator("EMAIL_CONNECTION_CONFIG", mode="before")
-    @classmethod
-    def assemble_email_config(
-        cls, v: ConnectionConfig | None, values: dict[str, Any]
-    ) -> ConnectionConfig | None:
-        if isinstance(v, ConnectionConfig):
-            return v
-        return ConnectionConfig(
-            MAIL_USERNAME=values.get("MAIL_USERNAME"),
-            MAIL_PASSWORD=values.get("MAIL_PASSWORD"),
-            MAIL_FROM=values.get("MAIL_FROM"),
-            MAIL_PORT=values.get("MAIL_PORT"),
-            MAIL_SERVER=values.get("MAIL_SERVER"),
-            MAIL_STARTTLS=values.get("MAIL_STARTTLS"),
-            MAIL_SSL_TLS=values.get("MAIL_SSL_TLS"),
-            TEMPLATE_FOLDER=values.get("EMAIL_TEMPLATES_DIR"),
-        )
-
-    # --------------------------------------------------
     # > Misc
     # --------------------------------------------------
     BACKEND_CORS_ORIGINS: list[str] | list[AnyHttpUrl]
@@ -134,6 +103,20 @@ class Settings(BaseSettings):
         elif isinstance(v, list | str):
             return v
         raise ValueError(v)
+
+    model_config = SettingsConfigDict(case_sensitive=True)
+
+
+class MailConnectionConfig(BaseSettings):
+    MAIL_USERNAME: str | None
+    MAIL_PASSWORD: str | None
+    MAIL_FROM: str | None
+    MAIL_PORT: int | None
+    MAIL_SERVER: str | None
+    MAIL_STARTTLS: bool | None
+    MAIL_SSL_TLS: bool | None
+    EMAIL_TEMPLATES_DIR: Path | str | None = Path(__file__).parent.parent / "templates/"
+    EMAIL_CONNECTION_CONFIG: ConnectionConfig | None = None
 
     model_config = SettingsConfigDict(case_sensitive=True)
 

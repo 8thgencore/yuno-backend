@@ -3,7 +3,6 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
-from fastapi_async_sqlalchemy.middleware import DBSessionMeta
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.async_sqlalchemy import paginate
 from pydantic import BaseModel
@@ -32,7 +31,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.model = model
         self.db = db
 
-    def get_db(self) -> DBSessionMeta:
+    def get_db(self) -> Any:
         return self.db
 
     async def get(

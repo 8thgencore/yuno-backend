@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "yuno"
+name = "app"
 version = "0.2.1"
 description = "Task management backend service"
 authors = ["8thgencore <8th@example.com>"]

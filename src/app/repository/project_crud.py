@@ -3,8 +3,8 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import and_, func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.crud.base_crud import CRUDBase
 from app.models import Project, ProjectUserLink, Task, User
+from app.repository.base_crud import CRUDBase
 from app.schemas.project_schema import (
     IProjectCreate,
     IProjectRead,

@@ -4,7 +4,7 @@ import sys
 from logging.config import fileConfig
 
 from sqlmodel import SQLModel, create_engine
-from sqlmodel.ext.asyncio.session import AsyncEngine
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from alembic import context
 from app.core.config import settings
