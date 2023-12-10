@@ -9,7 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
-from fastapi_pagination import add_pagination
 from loguru import logger
 from sqlalchemy.pool import QueuePool
 
@@ -53,7 +52,7 @@ def create_application() -> FastAPI:
     # Add SQLAlchemyMiddleware to the application
     app.add_middleware(
         SQLAlchemyMiddleware,
-        db_url=settings.ASYNC_DB_URI,
+        db_url=settings.ASYNC_DATABASE_URI,
         engine_args={
             "echo": False,
             "pool_pre_ping": True,
@@ -77,7 +76,7 @@ def create_application() -> FastAPI:
     app.include_router(api_router_v1, prefix=settings.API_PREFIX)
 
     # Add pagination to the application
-    add_pagination(app)
+    # add_pagination(app)
 
     return app
 

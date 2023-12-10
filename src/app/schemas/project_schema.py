@@ -10,7 +10,8 @@ class IProjectCreate(ProjectBase):
     pass
 
 
-@optional
+# All these fields are optional
+@optional()
 class IProjectUpdate(ProjectBase):
     pass
 

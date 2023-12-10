@@ -8,7 +8,8 @@ class ITaskCreate(TaskBase):
     project_id: UUID | None
 
 
-@optional
+# All these fields are optional
+@optional()
 class ITaskUpdate(TaskBase):
     pass
 

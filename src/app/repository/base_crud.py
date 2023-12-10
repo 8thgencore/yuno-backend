@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
 from fastapi_pagination import Page, Params
-from fastapi_pagination.ext.async_sqlalchemy import paginate
+from fastapi_pagination.ext.sqlmodel import paginate
 from pydantic import BaseModel
 from sqlalchemy import exc
 from sqlmodel import SQLModel, func, select
@@ -31,7 +31,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.model = model
         self.db = db
 
-    def get_db(self) -> Any:
+    def get_db(self) -> type(db):
         return self.db
 
     async def get(

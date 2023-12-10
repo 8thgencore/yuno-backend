@@ -12,12 +12,10 @@ DB_POOL_SIZE = 83
 WEB_CONCURRENCY = 9
 POOL_SIZE = max(DB_POOL_SIZE // WEB_CONCURRENCY, 5)
 
-connect_args = {"check_same_thread": False}
-
 metadata = MetaData()
 
 engine = create_async_engine(
-    settings.ASYNC_DB_URI,
+    settings.ASYNC_DATABASE_URI,
     echo=True,
     future=True,
     pool_size=POOL_SIZE,

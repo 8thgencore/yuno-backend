@@ -7,6 +7,7 @@ from typing import Any
 from fastapi_mail import ConnectionConfig
 from loguru import logger
 from pydantic import AnyHttpUrl, PostgresDsn, field_validator
+from pydantic_core.core_schema import FieldValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core import logging
@@ -47,24 +48,25 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASSWORD: str
     DB_HOST: str
-    DB_PORT: int | str
+    DB_PORT: int
     DB_NAME: str
 
-    ASYNC_DB_URI: str | None
+    ASYNC_DATABASE_URI: str | None
 
-    @field_validator("ASYNC_DB_URI", mode="before")
+    @field_validator("ASYNC_DATABASE_URI", mode="after")
     @classmethod
-    def assemble_db_connection(cls, v: str | None, values: dict[str, Any]) -> Any:
+    def assemble_db_connection(cls, v: str | None, info: FieldValidationInfo) -> Any:
         if isinstance(v, str):
-            return v
-        return PostgresDsn.build(
-            scheme=values.get("DB_SCHEME"),
-            user=values.get("DB_USER"),
-            password=values.get("DB_PASSWORD"),
-            host=values.get("DB_HOST"),
-            port=str(values.get("DB_PORT")),
-            path=f"/{values.get('DB_NAME') or ''}",
-        )
+            if v == "":
+                return PostgresDsn.build(
+                    scheme=info.data["DB_SCHEME"],
+                    user=info.data["DB_USER"],
+                    password=info.data["DB_PASSWORD"],
+                    host=info.data["DB_HOST"],
+                    port=str(info.data["DB_PORT"]),
+                    path=f"/{info.data['DB_NAME'] or ''}",
+                )
+        return v
 
     # --------------------------------------------------
     # > Minio
@@ -95,7 +97,7 @@ class Settings(BaseSettings):
     # --------------------------------------------------
     BACKEND_CORS_ORIGINS: list[str] | list[AnyHttpUrl]
 
-    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+    @field_validator("BACKEND_CORS_ORIGINS")
     @classmethod
     def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
         if isinstance(v, str) and not v.startswith("["):

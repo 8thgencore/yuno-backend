@@ -10,12 +10,12 @@ from app.utils.partial import optional
 
 
 class IUserCreate(UserBase):
-    password: str | None
+    password: str
     model_config = ConfigDict(hashed_password=None)
 
 
 # All these fields are optional
-@optional
+@optional()
 class IUserUpdate(UserBase):
     pass
 
