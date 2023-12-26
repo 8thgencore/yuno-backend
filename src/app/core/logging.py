@@ -1,49 +1,93 @@
 import logging
 import sys
-from datetime import time, timedelta
+from pprint import pformat
 
 from loguru import logger
+from loguru._defaults import LOGURU_FORMAT
+
+from app.core.config import settings
 
 
 class InterceptHandler(logging.Handler):
-    def emit(self, record: logging.LogRecord) -> None:
-        # Get corresponding Loguru level if it exists
+    """
+    Default handler from examples in loguru documentation.
+
+    This handler intercepts all log requests and
+    passes them to loguru.
+
+    For more info see:
+    https://loguru.readthedocs.io/en/stable/overview.html#entirely-compatible-with-standard-logging
+    """
+
+    def emit(self, record: logging.LogRecord) -> None:  # pragma: no cover
+        """
+        Propagates logs to loguru.
+
+        :param record: record to log.
+        """
         try:
             level: str | int = logger.level(record.levelname).name
         except ValueError:
             level = record.levelno
 
         # Find caller from where originated the logged message
-        frame = logging.currentframe()
-        depth = 2
+        frame, depth = logging.currentframe(), 2
         while frame.f_code.co_filename == logging.__file__:
-            if frame.f_back:
-                frame = frame.f_back
+            frame = frame.f_back  # type: ignore
             depth += 1
 
-        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level,
+            record.getMessage(),
+        )
 
 
-def setup(
-    file_name: str = "log.log",
-    rotation: time = time(),
-    retention: timedelta = timedelta(days=3),
-) -> None:
-    # Disable some packages logging
-    # logging.getLogger(gino.__name__).setLevel(logging.FATAL)
-    logging.getLogger("urllib3.connectionpool").setLevel(logging.FATAL)
-    logging.getLogger("multipart.multipart").setLevel(logging.FATAL)
-    logging.getLogger("")
+def record_formatter(record: dict) -> str:
+    """
+    Custom format for loguru loggers.
+    Uses pformat for log any data like request/response body during debug.
+    Works with logging if loguru handler it.
+    Example:
+    >>> payload = [{"users":[{"name": "Nick", "age": 87, "is_active": True}, {"name": "Alex", "age": 27, "is_active": True}], "count": 2}]
+    >>> logger.bind(payload=).debug("users payload")
+    >>> [   {   'count': 2,
+    >>>         'users': [   {'age': 87, 'is_active': True, 'name': 'Nick'},
+    >>>                      {'age': 27, 'is_active': True, 'name': 'Alex'}]}]
+    """
 
-    # Change handler for default uvicorn logger
+    format_string = LOGURU_FORMAT
+    if record["extra"].get("payload") is not None:
+        record["extra"]["payload"] = pformat(
+            record["extra"]["payload"],
+            indent=4,
+            compact=True,
+            width=88,
+        )
+        format_string += "\n<level>{extra[payload]}</level>"
+
+    format_string += "{exception}\n"
+
+    return format_string
+
+
+def configure_logging() -> None:  # pragma: no cover
+    """Configures logging."""
     intercept_handler = InterceptHandler()
+
+    logging.basicConfig(handlers=[intercept_handler], level=logging.NOTSET)
+
+    for logger_name in logging.root.manager.loggerDict:
+        if logger_name.startswith("uvicorn."):
+            logging.getLogger(logger_name).handlers = []
+
+    # change handler for default uvicorn logger
     logging.getLogger("uvicorn").handlers = [intercept_handler]
     logging.getLogger("uvicorn.access").handlers = [intercept_handler]
 
-    # Setup loguru
+    # set logs output, level and format
     logger.remove()
-    logger.add(sys.stderr, level="INFO")
-    logger.add(f"logs/{file_name}", rotation=rotation, retention=retention, level="DEBUG")
-
-    # Send default logging to loguru
-    logging.basicConfig(handlers=[intercept_handler], level=0)
+    logger.add(
+        sys.stdout,
+        level=settings.logging.level,
+        format=record_formatter,
+    )

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi_pagination import Params
 from loguru import logger
 
-from app import crud
+from app import repository
 from app.api import deps
 from app.models import Project, User
 from app.schemas.project_schema import (
@@ -40,7 +40,7 @@ async def get_my_projects(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IProjectWithUsers]:
     """Endpoint for getting the projects of the authenticated user."""
-    projects = await crud.project.get_by_user(params=params, user=current_user)
+    projects = await repository.project.get_by_user(params=params, user=current_user)
 
     return create_response(data=projects)
 
@@ -51,7 +51,7 @@ async def read_project_list(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IProjectWithUsers]:
     """Endpoint for getting a list of projects."""
-    projects = await crud.project.get_multi_paginated(params=params)
+    projects = await repository.project.get_multi_paginated(params=params)
 
     return create_response(data=projects)
 
@@ -61,7 +61,7 @@ async def get_project_statistics(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponseBase[StatisticsRead]:
     """Endpoint for getting a statistics of projects."""
-    stats = await crud.project.get_stats()
+    stats = await repository.project.get_stats()
 
     return create_response(data=stats)
 
@@ -72,7 +72,7 @@ async def create_project(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IPostResponseBase[IProjectRead]:
     """Creates a new project."""
-    project = await crud.project.create(obj_in=new_project, user=current_user)
+    project = await repository.project.create(obj_in=new_project, user=current_user)
     logger.info(f"User '{current_user.id}' created new project: '{project.id}'")
 
     return create_response(data=project)
@@ -84,7 +84,7 @@ async def get_project_by_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponseBase[IProjectWithUsersTasks]:
     """Gets a project by id."""
-    if project := await crud.project.get(id=project_id):
+    if project := await repository.project.get(id=project_id):
         return create_response(data=project)
     else:
         raise IdNotFoundException(Project, id=project_id)
@@ -97,14 +97,14 @@ async def update_project_by_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IPostResponseBase[IProjectRead]:
     """Update a project by id."""
-    current_project = await crud.project.get(id=project_id)
+    current_project = await repository.project.get(id=project_id)
     if not current_project:
         raise IdNotFoundException(Project, id=project_id)
 
     if current_user not in current_project.users:
         raise UserNotMemberProject()
 
-    project_updated = await crud.project.update(obj_new=project, obj_current=current_project)
+    project_updated = await repository.project.update(obj_new=project, obj_current=current_project)
     logger.info(f"User '{current_user.id}' updated project: '{project_id}'")
 
     return create_response(data=project_updated)
@@ -116,14 +116,14 @@ async def remove_project_by_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IDeleteResponseBase[IProjectRead]:
     """Delete a project by id."""
-    project = await crud.project.get(id=project_id)
+    project = await repository.project.get(id=project_id)
     if not project:
         raise IdNotFoundException(Project, id=project_id)
 
     if not project.created_by_id == current_user.id:
         raise UserNotCreatorProject()
 
-    project = await crud.project.remove(id=project_id)
+    project = await repository.project.remove(id=project_id)
     logger.info(f"User '{current_user.id}' deleted project: '{project_id}'")
 
     return create_response(data=project)
@@ -135,14 +135,14 @@ async def join_to_project_by_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponseBase[IProjectWithUsers]:
     """Endpoint for a user to join a project."""
-    current_project = await crud.project.get(id=project_id)
+    current_project = await repository.project.get(id=project_id)
     if not current_project:
         raise IdNotFoundException(Project, id=project_id)
 
     if current_user in current_project.users:
         raise UserAlredyMemberProject()
 
-    project = await crud.project.join_the_project(user=current_user, project=current_project)
+    project = await repository.project.join_the_project(user=current_user, project=current_project)
     logger.info(f"User '{current_user.id}' join a project: '{project_id}'")
 
     return create_response(data=project)
@@ -154,14 +154,17 @@ async def leave_to_project_by_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponseBase[IProjectWithUsers]:
     """Endpoint for a user to leave a project."""
-    current_project = await crud.project.get(id=project_id)
+    current_project = await repository.project.get(id=project_id)
     if not current_project:
         raise IdNotFoundException(Project, id=project_id)
 
     if current_user not in current_project.users:
         raise UserNotMemberProject()
 
-    project = await crud.project.leave_the_project(user=current_user, project=current_project)
+    project = await repository.project.leave_the_project(
+        user=current_user,
+        project=current_project,
+    )
     logger.info(f"User '{current_user.id}' leave a project: '{project_id}'")
 
     return create_response(data=project)
@@ -173,11 +176,11 @@ async def tasks_list_by_project_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[ITaskRead]:
     """This endpoint allows getting a list of tasks associated with a project."""
-    current_project = await crud.project.get(id=project_id)
+    current_project = await repository.project.get(id=project_id)
     if not current_project:
         raise IdNotFoundException(Project, id=project_id)
 
-    tasks = await crud.project.get_tasks(project_id=project_id)
+    tasks = await repository.project.get_tasks(project_id=project_id)
 
     return create_response(data=tasks)
 
@@ -188,10 +191,10 @@ async def members_list_by_project_id(
     current_user: User = Depends(deps.get_current_user()),
 ) -> IGetResponsePaginated[IUserRead]:
     """This endpoint allows getting a list of members associated with a project."""
-    current_project = await crud.project.get(id=project_id)
+    current_project = await repository.project.get(id=project_id)
     if not current_project:
         raise IdNotFoundException(Project, id=project_id)
 
-    projects = await crud.project.get_members(project=current_project)
+    projects = await repository.project.get_members(project=current_project)
 
     return create_response(data=projects)

@@ -5,7 +5,7 @@ services:
     container_name: ${APP_CONTAINER_NAME:-yuno-app-container}
     build:
       context: ./src
-      dockerfile: ./compose/production/Dockerfile
+      dockerfile: ./deploy/production/Dockerfile
     command: /start
     restart: unless-stopped
     expose:
@@ -87,7 +87,7 @@ services:
     container_name: ${CELERY_WORKER_CONTAINER_NAME:-yuno-celery-worker-container}
     build:
       context: ./src
-      dockerfile: ./compose/production/Dockerfile
+      dockerfile: ./deploy/production/Dockerfile
     command: /start-celeryworker
     env_file:
       - .env

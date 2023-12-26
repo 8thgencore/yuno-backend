@@ -3,9 +3,8 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
-from fastapi_async_sqlalchemy.middleware import DBSessionMeta
 from fastapi_pagination import Page, Params
-from fastapi_pagination.ext.async_sqlalchemy import paginate
+from fastapi_pagination.ext.sqlmodel import paginate
 from pydantic import BaseModel
 from sqlalchemy import exc
 from sqlmodel import SQLModel, func, select
@@ -32,11 +31,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.model = model
         self.db = db
 
-    def get_db(self) -> DBSessionMeta:
+    def get_db(self) -> type(db):
         return self.db
 
     async def get(
-        self, *, id: UUID | str, db_session: AsyncSession | None = None
+        self,
+        *,
+        id: UUID | str,
+        db_session: AsyncSession | None = None,
     ) -> ModelType | None:
         db_session = db_session or self.db.session
         query = select(self.model).where(self.model.id == id)
@@ -56,7 +58,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     async def get_count(self, db_session: AsyncSession | None = None) -> ModelType | None:
         db_session = db_session or self.db.session
         response = await db_session.execute(
-            select(func.count()).select_from(select(self.model).subquery())
+            select(func.count()).select_from(select(self.model).subquery()),
         )
         return response.scalar_one()
 
@@ -170,7 +172,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             update_data = obj_new
         else:
             update_data = obj_new.dict(
-                exclude_unset=True
+                exclude_unset=True,
             )  # This tells Pydantic to not include the values that were not sent
 
         for field in update_data:

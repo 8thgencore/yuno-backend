@@ -3,14 +3,14 @@ version: 2
 updates:
   # Maintain dependencies for docker
   - package-ecosystem: "docker"
-    directory: "/src/compose/local"
+    directory: "/src/deploy/local"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
 
   # Maintain dependencies for docker
   - package-ecosystem: "docker"
-    directory: "/src/compose/production"
+    directory: "/src/deploy/production"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10

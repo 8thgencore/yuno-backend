@@ -4,8 +4,7 @@ from typing import Any, Generic, TypeVar
 
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage, AbstractParams
-from pydantic import Field
-from pydantic.generics import GenericModel
+from pydantic import BaseModel, Field
 
 DataType = TypeVar("DataType")
 T = TypeVar("T")
@@ -13,20 +12,14 @@ T = TypeVar("T")
 
 class PageBase(Page[T], Generic[T]):
     pages: int
-    previous_page: int | None = Field(
-        None,
-        description="Page number of the previous page",
-    )
-    next_page: int | None = Field(
-        None,
-        description="Page number of the next page",
-    )
+    previous_page: int | None = Field(default=None, description="Page number of the previous page")
+    next_page: int | None = Field(default=None, description="Page number of the next page")
 
 
-class IResponseBase(GenericModel, Generic[T]):
+class IResponseBase(BaseModel, Generic[T]):
     message: str | None = ""
-    meta: dict = {}
-    data: T | None
+    meta: dict | Any | None = {}
+    data: T | None = None
 
 
 class IGetResponsePaginated(AbstractPage[T], Generic[T]):
@@ -57,7 +50,7 @@ class IGetResponsePaginated(AbstractPage[T], Generic[T]):
                 pages=pages,
                 next_page=params.page + 1 if params.page < pages else None,
                 previous_page=params.page - 1 if params.page > 1 else None,
-            )
+            ),
         )
 
 

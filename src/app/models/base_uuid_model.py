@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import Any
+from uuid import UUID
 
-from pydantic.datetime_parse import parse_datetime
+from pydantic import ConfigDict
 from sqlalchemy.orm import declared_attr
 from sqlmodel import Field
 from sqlmodel import SQLModel as _SQLModel
 
-from app.utils.uuid6 import UUID, uuid7
+from app.utils.uuid6 import uuid7
 
 # id: implements proposal uuid7 draft4
 
@@ -30,14 +30,17 @@ class BaseUUIDModel(SQLModel):
     )
     created_at: datetime | None = Field(default_factory=datetime.utcnow)
 
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-class UTCDatetime(datetime):
-    """parse a datetime and convert in into UTC format"""
 
-    @classmethod
-    def __get_validators__(cls) -> Any:
-        yield cls.validate
+# class UTCDatetime(datetime):
+#     """parse a datetime and convert in into UTC format"""
 
-    @classmethod
-    def validate(cls, v: Any) -> datetime:
-        return datetime.fromtimestamp(parse_datetime(v).timestamp())
+#     @classmethod
+#     def __get_pydantic_core_schema__(cls) -> Any:
+#         yield cls.validate
+
+#     # TODO:
+#     # @classmethod
+#     # def validate(cls, v: Any) -> datetime:
+#     #     return datetime.fromtimestamp(parse_datetime(v).timestamp())

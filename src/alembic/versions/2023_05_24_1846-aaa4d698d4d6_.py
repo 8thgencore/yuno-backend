@@ -82,7 +82,7 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=True),
         sa.Column(
-            "hashed_password", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+            "hashed_password", sqlmodel.sql.sqltypes.AutoString(), nullable=False,
         ),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("is_superuser", sa.Boolean(), nullable=False),
@@ -100,7 +100,7 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_User_email"), "User", ["email"], unique=True)
     op.create_index(
-        op.f("ix_User_hashed_password"), "User", ["hashed_password"], unique=False
+        op.f("ix_User_hashed_password"), "User", ["hashed_password"], unique=False,
     )
     op.create_index(op.f("ix_User_id"), "User", ["id"], unique=False)
     op.create_table(

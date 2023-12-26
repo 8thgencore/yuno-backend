@@ -9,7 +9,7 @@ class IModifiedImageResponse(BaseModel):
     width: int
     height: int
     file_format: str
-    file_data: Any
+    file_data: Any = None
 
 
 def crop_center(pil_img, crop_width, crop_height) -> Any:
@@ -20,7 +20,7 @@ def crop_center(pil_img, crop_width, crop_height) -> Any:
             (img_height - crop_height) // 2,
             (img_width + crop_width) // 2,
             (img_height + crop_height) // 2,
-        )
+        ),
     )
 
 

@@ -9,7 +9,7 @@ class IMediaCreate(MediaBase):
 
 
 # All these fields are optional
-@optional
+@optional()
 class IMediaUpdate(MediaBase):
     pass
 

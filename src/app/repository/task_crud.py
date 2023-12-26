@@ -3,15 +3,18 @@ from datetime import datetime
 from sqlmodel import and_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.crud.base_crud import CRUDBase
 from app.models import Project, Task, User
-from app.models.base_uuid_model import UTCDatetime
+from app.repository.base_crud import CRUDBase
 from app.schemas.task_schema import ITaskCreate, ITaskUpdate, ITaskWithProjectName
 
 
 class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
     async def create(
-        self, *, obj_in: ITaskCreate, user: User, db_session: AsyncSession | None = None
+        self,
+        *,
+        obj_in: ITaskCreate,
+        user: User,
+        db_session: AsyncSession | None = None,
     ) -> Task:
         db_session = db_session or super().get_db().session
 
@@ -24,7 +27,10 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
         return db_obj
 
     async def get_by_user(
-        self, *, user: User, db_session: AsyncSession | None = None
+        self,
+        *,
+        user: User,
+        db_session: AsyncSession | None = None,
     ) -> list[ITaskWithProjectName]:
         db_session = db_session or super().get_db().session
 
@@ -52,7 +58,10 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
         return tasks
 
     async def get_not_completed_by_user(
-        self, *, user: User, db_session: AsyncSession | None = None
+        self,
+        *,
+        user: User,
+        db_session: AsyncSession | None = None,
     ) -> list[ITaskWithProjectName]:
         db_session = db_session or super().get_db().session
 
@@ -81,7 +90,11 @@ class CRUDTask(CRUDBase[Task, ITaskCreate, ITaskUpdate]):
         return tasks
 
     async def get_by_deadline(
-        self, *, user: User, date: UTCDatetime, db_session: AsyncSession | None = None
+        self,
+        *,
+        user: User,
+        date: datetime,
+        db_session: AsyncSession | None = None,
     ) -> list[ITaskWithProjectName]:
         db_session = db_session or super().get_db().session
 

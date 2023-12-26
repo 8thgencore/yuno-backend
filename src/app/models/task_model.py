@@ -1,15 +1,16 @@
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from app.models.base_uuid_model import BaseUUIDModel, UTCDatetime
+from app.models.base_uuid_model import BaseUUIDModel
 
 
 class TaskBase(SQLModel):
     name: str
     done: bool = Field(default=False)
-    deadline: UTCDatetime | None = Field(description="ISO 8601 format")
+    deadline: datetime | None = Field(default=None, description="ISO 8601 format")
 
 
 class Task(BaseUUIDModel, TaskBase, table=True):

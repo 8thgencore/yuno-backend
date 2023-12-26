@@ -5,7 +5,7 @@ services:
     container_name: ${APP_CONTAINER_NAME:-yuno-app-container}
     build:
       context: ./src
-      dockerfile: ./compose/local/Dockerfile
+      dockerfile: ./deploy/local/Dockerfile
     command: /start
     restart: unless-stopped
     volumes:
@@ -73,7 +73,7 @@ services:
     container_name: ${CELERY_WORKER_CONTAINER_NAME:-yuno-celery-worker-container}
     build:
       context: ./src
-      dockerfile: ./compose/local/Dockerfile
+      dockerfile: ./deploy/local/Dockerfile
     command: /start-celeryworker
     volumes:
       - ./src:/usr/src
@@ -87,7 +87,7 @@ services:
     container_name: ${FLOWER_CONTAINER_NAME:-yuno-flower-container}
     build:
       context: ./src
-      dockerfile: ./compose/local/Dockerfile
+      dockerfile: ./deploy/local/Dockerfile
     command: /start-flower
     volumes:
       - ./src:/usr/src

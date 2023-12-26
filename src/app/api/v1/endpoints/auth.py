@@ -6,7 +6,7 @@ from jwt import DecodeError, ExpiredSignatureError, MissingRequiredClaimError
 from loguru import logger
 from redis.asyncio import Redis
 
-from app import crud
+from app import repository
 from app.api import deps
 from app.core import security
 from app.core.config import settings
@@ -50,14 +50,14 @@ async def login(
     Raises:
       - `HTTPException`: If the email or password is incorrect, or if the user is inactive.
     """
-    user = await crud.user.authenticate(email=login_user.email, password=login_user.password)
+    user = await repository.user.authenticate(email=login_user.email, password=login_user.password)
     if not user:
         raise HTTPException(status_code=400, detail="Email or Password incorrect")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="User is inactive")
 
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.srv.ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token_expires = timedelta(minutes=settings.srv.REFRESH_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(user.id, expires_delta=access_token_expires)
     refresh_token = security.create_refresh_token(user.id, expires_delta=refresh_token_expires)
     data = Token(
@@ -74,7 +74,7 @@ async def login(
             user,
             access_token,
             TokenType.ACCESS,
-            settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+            settings.srv.ACCESS_TOKEN_EXPIRE_MINUTES,
         )
     valid_refresh_tokens = await get_valid_tokens(redis_client, user.id, TokenType.REFRESH)
     if valid_refresh_tokens:
@@ -83,12 +83,13 @@ async def login(
             user,
             refresh_token,
             TokenType.REFRESH,
-            settings.REFRESH_TOKEN_EXPIRE_MINUTES,
+            settings.srv.REFRESH_TOKEN_EXPIRE_MINUTES,
         )
 
     logger.info(f"User '{user.email}' successful loggined")
 
-    return create_response(meta=meta_data, data=data, message="Login correctly")
+    # return create_response(meta=meta_data, data=data, message="Login correctly")
+    return create_response(data=data, message="Login correctly")
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
@@ -117,13 +118,13 @@ async def register(
         is_superuser=False,
     )
 
-    role = await crud.role.get_role_by_name(name="user")
+    role = await repository.role.get_role_by_name(name="user")
     if not role:
         new_user.role_id = None
     else:
         new_user.role_id = role.id
 
-    user = await crud.user.create_with_role(obj_in=new_user)
+    user = await repository.user.create_with_role(obj_in=new_user)
     logger.info(f"User '{user.email}' registered")
 
     return create_response(data=user)
@@ -146,13 +147,16 @@ async def login_access_token(
       - `HTTPException` : If the email or password is incorrect, or if the user is inactive.
 
     """
-    user = await crud.user.authenticate(email=form_data.username, password=form_data.password)
+    user = await repository.user.authenticate(
+        email=form_data.username,
+        password=form_data.password,
+    )
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
 
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.srv.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(user.id, expires_delta=access_token_expires)
     valid_access_tokens = await get_valid_tokens(redis_client, user.id, TokenType.ACCESS)
     if valid_access_tokens:
@@ -161,7 +165,7 @@ async def login_access_token(
             user,
             access_token,
             TokenType.ACCESS,
-            settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+            settings.srv.ACCESS_TOKEN_EXPIRE_MINUTES,
         )
 
     return TokenRead(access_token=access_token, token_type="bearer")
@@ -209,11 +213,12 @@ async def get_new_access_token(
         if valid_refresh_tokens and body.refresh_token not in valid_refresh_tokens:
             raise HTTPException(status_code=403, detail="Refresh token invalid")
 
-        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        user = await crud.user.get(id=user_id)
+        access_token_expires = timedelta(minutes=settings.srv.ACCESS_TOKEN_EXPIRE_MINUTES)
+        user = await repository.user.get(id=user_id)
         if user.is_active:
             access_token = security.create_access_token(
-                user.id, expires_delta=access_token_expires
+                user.id,
+                expires_delta=access_token_expires,
             )
             valid_access_tokens = await get_valid_tokens(redis_client, user.id, TokenType.ACCESS)
             if valid_access_tokens:
@@ -222,7 +227,7 @@ async def get_new_access_token(
                     user,
                     access_token,
                     TokenType.ACCESS,
-                    settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+                    settings.srv.ACCESS_TOKEN_EXPIRE_MINUTES,
                 )
             return create_response(
                 data=TokenRead(access_token=access_token, token_type="bearer"),
@@ -262,18 +267,21 @@ async def change_password(
 
     # Update the user's password in the database
     new_hashed_password = get_password_hash(password.new_password)
-    await crud.user.update(
-        obj_current=current_user, obj_new={"hashed_password": new_hashed_password}
+    await repository.user.update(
+        obj_current=current_user,
+        obj_new={"hashed_password": new_hashed_password},
     )
 
     # Create new access and refresh tokens
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.srv.ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token_expires = timedelta(minutes=settings.srv.REFRESH_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(
-        current_user.id, expires_delta=access_token_expires
+        current_user.id,
+        expires_delta=access_token_expires,
     )
     refresh_token = security.create_refresh_token(
-        current_user.id, expires_delta=refresh_token_expires
+        current_user.id,
+        expires_delta=refresh_token_expires,
     )
     data = Token(
         access_token=access_token,
@@ -292,14 +300,14 @@ async def change_password(
         current_user,
         access_token,
         TokenType.ACCESS,
-        settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+        settings.srv.ACCESS_TOKEN_EXPIRE_MINUTES,
     )
     await add_token_to_redis(
         redis_client,
         current_user,
         refresh_token,
         TokenType.REFRESH,
-        settings.REFRESH_TOKEN_EXPIRE_MINUTES,
+        settings.srv.REFRESH_TOKEN_EXPIRE_MINUTES,
     )
 
     logger.info(f"User '{current_user.email}' changed password")
@@ -324,7 +332,7 @@ async def forgot_password(
       - `HTTPException`: If the provided email address is not associated with an existing user.
     """
     email = body.email
-    user = await crud.user.get_by_email(email=email)
+    user = await repository.user.get_by_email(email=email)
     if not user:
         raise EmailNotFoundException(email=email)
 
@@ -334,7 +342,7 @@ async def forgot_password(
         redis_client,
         user,
         otp_code,
-        settings.OTP_EXPIRE_MINUTES,
+        settings.srv.OTP_EXPIRE_MINUTES,
     )
 
     # Send the verification email containing the OTP code
@@ -360,7 +368,7 @@ async def send_otp_code(
       - `HTTPException`: If the user entered an invalid otp code.
     """
     email = body.email
-    user = await crud.user.get_by_email(email=email)
+    user = await repository.user.get_by_email(email=email)
     if not user:
         raise EmailNotFoundException(email=email)
 
@@ -377,7 +385,7 @@ async def send_otp_code(
         logger.info(f"The user '{email}' has successfully entered the OTP code")
 
         # Create new reset token
-        reset_token_expires = timedelta(minutes=settings.RESET_TOKEN_EXPITE_MINUTES)
+        reset_token_expires = timedelta(minutes=settings.srv.RESET_TOKEN_EXPITE_MINUTES)
         reset_token = security.create_reset_token(user.id, expires_delta=reset_token_expires)
 
         # Delete any existing reset tokens for the user
@@ -389,7 +397,7 @@ async def send_otp_code(
             user,
             reset_token,
             TokenType.RESET,
-            settings.RESET_TOKEN_EXPITE_MINUTES,
+            settings.srv.RESET_TOKEN_EXPITE_MINUTES,
         )
 
         data = ResetToken(reset_token=reset_token)
@@ -442,12 +450,15 @@ async def reset_password(
         if not valid_reset_tokens or body.reset_token not in valid_reset_tokens:
             raise HTTPException(status_code=403, detail="Reset token invalid")
 
-        user = await crud.user.get(id=user_id)
+        user = await repository.user.get(id=user_id)
 
         if user.is_active:
             # Set the user's new password in the database
             hashed_password = get_password_hash(body.password)
-            await crud.user.update(obj_current=user, obj_new={"hashed_password": hashed_password})
+            await repository.user.update(
+                obj_current=user,
+                obj_new={"hashed_password": hashed_password},
+            )
             logger.info(f"User '{user.email}' set new password successfully")
 
             return create_response(data=user, message="New password was set successfully")
