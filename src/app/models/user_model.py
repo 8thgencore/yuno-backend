@@ -15,7 +15,8 @@ class UserBase(SQLModel):
     username: str = Field(nullable=True, sa_column_kwargs={"unique": True})
     email: str = Field(nullable=True, index=True, sa_column_kwargs={"unique": True})
     birthdate: datetime | None = Field(
-        default=None, sa_column=Column(DateTime(timezone=True))
+        default=None,
+        sa_column=Column(DateTime(timezone=True)),
     )  # birthday with timezone
     phone: str | None = None
     role_id: UUID | None = Field(default=None, foreign_key="Role.id")
@@ -34,7 +35,7 @@ class User(BaseUUIDModel, UserBase, table=True):
         sa_relationship_kwargs={
             "lazy": "joined",
             "primaryjoin": "User.image_id==ImageMedia.id",
-        }
+        },
     )
 
     projects: list["Project"] = Relationship(  # noqa: F821

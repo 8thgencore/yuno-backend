@@ -19,15 +19,15 @@ from app.utils.minio_client import MinioClient
 from app.utils.token import get_valid_tokens
 
 reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_PREFIX}/auth/token",
+    tokenUrl=f"{settings.srv.API_PREFIX}/auth/token",
     scheme_name="JWT",
 )
 
 
 async def get_redis_client() -> Redis:
     redis = await aioredis.from_url(
-        f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
-        password=settings.REDIS_PASSWORD,
+        f"redis://{settings.database.REDIS_HOST}:{settings.database.REDIS_PORT}",
+        password=settings.database.REDIS_PASSWORD,
         max_connections=10,
         encoding="utf8",
         decode_responses=True,
@@ -113,9 +113,9 @@ def get_current_user(required_roles: list[str] = None) -> Callable[[], User]:
 
 def minio_auth() -> MinioClient:
     minio_client = MinioClient(
-        access_key=settings.MINIO_ROOT_USER,
-        secret_key=settings.MINIO_ROOT_PASSWORD,
-        bucket_name=settings.MINIO_BUCKET,
-        minio_url=settings.MINIO_URL,
+        access_key=settings.file_storage.MINIO_ROOT_USER,
+        secret_key=settings.file_storage.MINIO_ROOT_PASSWORD,
+        bucket_name=settings.file_storage.MINIO_BUCKET,
+        minio_url=settings.file_storage.MINIO_URL,
     )
     return minio_client

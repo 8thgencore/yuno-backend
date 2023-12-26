@@ -50,14 +50,16 @@ users: list[dict[str, str | IUserCreate]] = [
 async def init_db(db_session: AsyncSession) -> None:
     for role in roles:
         role_current = await repository.role.get_role_by_name(
-            name=role.name, db_session=db_session
+            name=role.name,
+            db_session=db_session,
         )
         if not role_current:
             await repository.role.create(obj_in=role, db_session=db_session)
 
     for user in users:
         current_user = await repository.user.get_by_email(
-            email=user["data"].email, db_session=db_session
+            email=user["data"].email,
+            db_session=db_session,
         )
         role = await repository.role.get_role_by_name(name=user["role"], db_session=db_session)
         if not current_user:

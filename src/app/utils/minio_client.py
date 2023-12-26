@@ -37,7 +37,9 @@ class MinioClient:
     def presigned_get_object(self, bucket_name: str, object_name: str) -> Any:
         # Request URL expired after 7 days
         url = self.client.presigned_get_object(
-            bucket_name=bucket_name, object_name=object_name, expires=timedelta(days=7)
+            bucket_name=bucket_name,
+            object_name=object_name,
+            expires=timedelta(days=7),
         )
         return url
 
@@ -50,7 +52,10 @@ class MinioClient:
             return False
 
     def put_object(
-        self, file_data: BytesIO, file_name: str, content_type: str
+        self,
+        file_data: BytesIO,
+        file_name: str,
+        content_type: str,
     ) -> IMinioResponse | Any:
         try:
             # object_name = f"{uuid7()}{file_name}"
@@ -65,7 +70,9 @@ class MinioClient:
             )
             url = self.presigned_get_object(bucket_name=self.bucket_name, object_name=object_name)
             data_file = IMinioResponse(
-                bucket_name=self.bucket_name, file_name=object_name, url=url
+                bucket_name=self.bucket_name,
+                file_name=object_name,
+                url=url,
             )
             return data_file
         except Exception as e:

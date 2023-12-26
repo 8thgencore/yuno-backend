@@ -36,7 +36,7 @@ async def username_exists(user: IUserCreate) -> IUserCreate:
 
 
 async def is_valid_user(
-    user_id: Annotated[UUID, Path(title="The UUID id of the user")]
+    user_id: Annotated[UUID, Path(title="The UUID id of the user")],
 ) -> IUserRead:
     user = await repository.user.get(id=user_id)
     if not user:

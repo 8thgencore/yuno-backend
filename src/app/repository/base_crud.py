@@ -35,7 +35,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return self.db
 
     async def get(
-        self, *, id: UUID | str, db_session: AsyncSession | None = None
+        self,
+        *,
+        id: UUID | str,
+        db_session: AsyncSession | None = None,
     ) -> ModelType | None:
         db_session = db_session or self.db.session
         query = select(self.model).where(self.model.id == id)
@@ -55,7 +58,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     async def get_count(self, db_session: AsyncSession | None = None) -> ModelType | None:
         db_session = db_session or self.db.session
         response = await db_session.execute(
-            select(func.count()).select_from(select(self.model).subquery())
+            select(func.count()).select_from(select(self.model).subquery()),
         )
         return response.scalar_one()
 
@@ -169,7 +172,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             update_data = obj_new
         else:
             update_data = obj_new.dict(
-                exclude_unset=True
+                exclude_unset=True,
             )  # This tells Pydantic to not include the values that were not sent
 
         for field in update_data:

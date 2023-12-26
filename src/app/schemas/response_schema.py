@@ -50,7 +50,7 @@ class IGetResponsePaginated(AbstractPage[T], Generic[T]):
                 pages=pages,
                 next_page=params.page + 1 if params.page < pages else None,
                 previous_page=params.page - 1 if params.page > 1 else None,
-            )
+            ),
         )
 
 

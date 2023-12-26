@@ -14,7 +14,8 @@ from sqlalchemy.pool import QueuePool
 
 from app.api.deps import get_redis_client
 from app.api.v1.api import api_router as api_router_v1
-from app.core.config import load_log_config, settings
+from app.core.config import settings
+from app.core.logging import configure_logging
 from app.utils.celery_utils import create_celery
 
 
@@ -33,14 +34,14 @@ async def lifespan(app: FastAPI):
 # Initialize the application and create a FastAPI instance
 def create_application() -> FastAPI:
     # Load the log configuration
-    load_log_config()
+    configure_logging()
     logger.info("Starting application")
 
     # Create an instance of FastAPI
     app = FastAPI(
-        title=settings.APP_TITLE,
-        version=settings.APP_VERSION,
-        description=settings.APP_DESCRIPTION,
+        title=settings.srv.APP_TITLE,
+        version=settings.srv.APP_VERSION,
+        description=settings.srv.APP_DESCRIPTION,
         openapi_url="/openapi.json",
         docs_url="/",
         lifespan=lifespan,
@@ -52,7 +53,7 @@ def create_application() -> FastAPI:
     # Add SQLAlchemyMiddleware to the application
     app.add_middleware(
         SQLAlchemyMiddleware,
-        db_url=settings.ASYNC_DATABASE_URI,
+        db_url=settings.database.ASYNC_DATABASE_URI,
         engine_args={
             "echo": False,
             "pool_pre_ping": True,
@@ -63,17 +64,17 @@ def create_application() -> FastAPI:
     )
 
     # If there are any CORS enabled origins, add a CORSMiddleware to the application
-    if settings.BACKEND_CORS_ORIGINS:
+    if settings.srv.BACKEND_CORS_ORIGINS:
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+            allow_origins=[str(origin) for origin in settings.srv.BACKEND_CORS_ORIGINS],
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
         )
 
     # Include the API router
-    app.include_router(api_router_v1, prefix=settings.API_PREFIX)
+    app.include_router(api_router_v1, prefix=settings.srv.API_PREFIX)
 
     # Add pagination to the application
     # add_pagination(app)

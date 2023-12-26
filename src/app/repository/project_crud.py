@@ -62,7 +62,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
 
         # delete links
         response = await db_session.execute(
-            select(ProjectUserLink).where(ProjectUserLink.project_id == id)
+            select(ProjectUserLink).where(ProjectUserLink.project_id == id),
         )
         obj = response.scalars().all()
         for ob in obj:
@@ -83,7 +83,11 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return obj
 
     async def is_member_project(
-        self, *, user_id: str, project_id: str, db_session: AsyncSession | None = None
+        self,
+        *,
+        user_id: str,
+        project_id: str,
+        db_session: AsyncSession | None = None,
     ) -> bool:
         db_session = db_session or super().get_db().session
 
@@ -91,7 +95,7 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
             and_(
                 ProjectUserLink.user_id == user_id,
                 ProjectUserLink.project_id == project_id,
-            )
+            ),
         )
         response = await db_session.execute(query)
         obj = response.scalar_one_or_none()
@@ -99,7 +103,11 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return True if obj else False
 
     async def join_the_project(
-        self, *, user: User, project: Project, db_session: AsyncSession | None = None
+        self,
+        *,
+        user: User,
+        project: Project,
+        db_session: AsyncSession | None = None,
     ) -> Project:
         db_session = db_session or super().get_db().session
 
@@ -113,7 +121,11 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return project
 
     async def leave_the_project(
-        self, *, user: User, project: Project, db_session: AsyncSession | None = None
+        self,
+        *,
+        user: User,
+        project: Project,
+        db_session: AsyncSession | None = None,
     ) -> Project:
         db_session = db_session or super().get_db().session
 
@@ -122,8 +134,8 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
                 and_(
                     ProjectUserLink.user_id == user.id,
                     ProjectUserLink.project_id == project.id,
-                )
-            )
+                ),
+            ),
         )
         obj = response.scalar_one_or_none()
         if obj:
@@ -133,7 +145,10 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return project
 
     async def get_tasks(
-        self, *, project_id: str, db_session: AsyncSession | None = None
+        self,
+        *,
+        project_id: str,
+        db_session: AsyncSession | None = None,
     ) -> list[ITaskRead]:
         db_session = db_session or super().get_db().session
 
@@ -142,7 +157,10 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         return tasks
 
     async def get_members(
-        self, *, project: IProjectRead, db_session: AsyncSession | None = None
+        self,
+        *,
+        project: IProjectRead,
+        db_session: AsyncSession | None = None,
     ) -> list[ITaskRead]:
         db_session = db_session or super().get_db().session
 
@@ -156,12 +174,12 @@ class CRUDProject(CRUDBase[Project, IProjectCreate, IProjectUpdate]):
         projects_count = await super().get_count()
 
         result = await db_session.execute(
-            select(func.count(Project.id)).where(Project.percent_completed == 0)
+            select(func.count(Project.id)).where(Project.percent_completed == 0),
         )
         missing_count = result.scalar()
 
         result = await db_session.execute(
-            select(func.count(Project.id)).where(Project.percent_completed == 1)
+            select(func.count(Project.id)).where(Project.percent_completed == 1),
         )
         completed_count = result.scalar()
 

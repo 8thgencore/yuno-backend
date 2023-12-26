@@ -29,7 +29,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = SQLModel.metadata
 
-db_url = str(settings.ASYNC_DATABASE_URI)
+db_url = str(settings.database.ASYNC_DATABASE_URI)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

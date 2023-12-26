@@ -15,21 +15,30 @@ from app.schemas.user_schema import IUserCreate, IUserUpdate
 
 class CRUDUser(CRUDBase[User, IUserCreate, IUserUpdate]):
     async def get_by_email(
-        self, *, email: str, db_session: AsyncSession | None = None
+        self,
+        *,
+        email: str,
+        db_session: AsyncSession | None = None,
     ) -> User | None:
         db_session = db_session or super().get_db().session
         user = await db_session.execute(select(User).where(User.email == email))
         return user.scalar_one_or_none()
 
     async def get_by_username(
-        self, *, username: str, db_session: AsyncSession | None = None
+        self,
+        *,
+        username: str,
+        db_session: AsyncSession | None = None,
     ) -> User | None:
         db_session = db_session or super().get_db().session
         user = await db_session.execute(select(User).where(User.username == username))
         return user.scalar_one_or_none()
 
     async def create_with_role(
-        self, *, obj_in: IUserCreate, db_session: AsyncSession | None = None
+        self,
+        *,
+        obj_in: IUserCreate,
+        db_session: AsyncSession | None = None,
     ) -> User:
         db_session = db_session or super().get_db().session
         db_obj = User.from_orm(obj_in)
@@ -41,7 +50,10 @@ class CRUDUser(CRUDBase[User, IUserCreate, IUserUpdate]):
         return db_obj
 
     async def update_is_active(
-        self, *, db_obj: list[User], obj_in: int | str | dict[str, Any]
+        self,
+        *,
+        db_obj: list[User],
+        obj_in: int | str | dict[str, Any],
     ) -> User | None:
         db_session = super().get_db().session
 

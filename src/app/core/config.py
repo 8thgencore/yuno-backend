@@ -1,4 +1,3 @@
-from datetime import datetime, time, timedelta
 from enum import Enum
 from functools import lru_cache
 from pathlib import Path
@@ -10,8 +9,6 @@ from pydantic import AnyHttpUrl, PostgresDsn, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from app.core import logging
-
 
 class ModeEnum(str, Enum):
     development = "development"
@@ -19,7 +16,7 @@ class ModeEnum(str, Enum):
     testing = "testing"
 
 
-class Settings(BaseSettings):
+class SrvSettings(BaseSettings):
     # --------------------------------------------------
     # > Application
     # --------------------------------------------------
@@ -41,6 +38,24 @@ class Settings(BaseSettings):
     OTP_EXPIRE_MINUTES: int = 5  # 5 minutes
     RESET_TOKEN_EXPITE_MINUTES: int = 30  # 30 minutes
 
+    # --------------------------------------------------
+    # > Misc
+    # --------------------------------------------------
+    BACKEND_CORS_ORIGINS: list[str] | list[AnyHttpUrl] = ["*"]
+
+    @field_validator("BACKEND_CORS_ORIGINS")
+    @classmethod
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
+        if isinstance(v, str) and not v.startswith("["):
+            return [i.strip() for i in v.split(",")]
+        elif isinstance(v, list | str):
+            return v
+        raise ValueError(v)
+
+    model_config = SettingsConfigDict(case_sensitive=True)
+
+
+class DatabaseSettings(BaseSettings):
     # --------------------------------------------------
     # > Postgres
     # --------------------------------------------------
@@ -69,14 +84,6 @@ class Settings(BaseSettings):
         return v
 
     # --------------------------------------------------
-    # > Minio
-    # --------------------------------------------------
-    MINIO_ROOT_USER: str
-    MINIO_ROOT_PASSWORD: str
-    MINIO_URL: str
-    MINIO_BUCKET: str
-
-    # --------------------------------------------------
     # > Redis
     # --------------------------------------------------
     REDIS_HOST: str
@@ -84,6 +91,18 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: str
     REDIS_POOL_SIZE: str
 
+
+class FileStorageSettings(BaseSettings):
+    # --------------------------------------------------
+    # > Minio
+    # --------------------------------------------------
+    MINIO_ROOT_USER: str
+    MINIO_ROOT_PASSWORD: str
+    MINIO_URL: str
+    MINIO_BUCKET: str
+
+
+class CelerySettings(BaseSettings):
     # --------------------------------------------------
     # > Celery
     # --------------------------------------------------
@@ -91,22 +110,6 @@ class Settings(BaseSettings):
     RESULT_BACKEND: str
 
     WS_MESSAGE_QUEUE: str
-
-    # --------------------------------------------------
-    # > Misc
-    # --------------------------------------------------
-    BACKEND_CORS_ORIGINS: list[str] | list[AnyHttpUrl]
-
-    @field_validator("BACKEND_CORS_ORIGINS")
-    @classmethod
-    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, list | str):
-            return v
-        raise ValueError(v)
-
-    model_config = SettingsConfigDict(case_sensitive=True)
 
 
 class MailConnectionConfig(BaseSettings):
@@ -123,44 +126,26 @@ class MailConnectionConfig(BaseSettings):
     model_config = SettingsConfigDict(case_sensitive=True)
 
 
-class LogSettings(BaseSettings):
-    LOG_FILE_NAME: str = "log_file_name.log"
-    LOG_ROTATION: time
-    LOG_RETENTION: timedelta
+class LoggingConfig(BaseSettings):
+    level: str
+    json_enabled: bool
 
-    @field_validator("LOG_ROTATION", mode="before")
-    @classmethod
-    def assemble_log_rotation(cls, v: str | None) -> time:
-        if isinstance(v, str):
-            return datetime.strptime(v, "%H:%M").time()
-        else:
-            return datetime.strptime("00:00", "%H:%M").time()
+    model_config = SettingsConfigDict(env_file=".env", env_prefix="LOGGING_")
 
-    @field_validator("LOG_RETENTION", mode="before")
-    @classmethod
-    def assemble_log_retention(cls, v: int | None) -> timedelta:
-        if isinstance(v, int):
-            return timedelta(days=v)
-        else:
-            return timedelta(days=3)
 
-    model_config = SettingsConfigDict(case_sensitive=True)
+class Settings(BaseSettings):
+    srv: SrvSettings = SrvSettings()
+    database: DatabaseSettings = DatabaseSettings()
+    file_storage: FileStorageSettings = FileStorageSettings()
+    celery: CelerySettings = CelerySettings()
+    mail: MailConnectionConfig = MailConnectionConfig()
+    logging: LoggingConfig = LoggingConfig()
 
 
 @lru_cache
 def get_settings() -> Settings:
     logger.info("Loading config settings from the environment...")
     return Settings()
-
-
-@lru_cache
-def load_log_config():
-    log_settings = LogSettings()
-    logging.setup(
-        log_settings.LOG_FILE_NAME,
-        log_settings.LOG_ROTATION,
-        log_settings.LOG_RETENTION,
-    )
 
 
 settings = get_settings()

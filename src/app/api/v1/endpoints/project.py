@@ -162,7 +162,8 @@ async def leave_to_project_by_id(
         raise UserNotMemberProject()
 
     project = await repository.project.leave_the_project(
-        user=current_user, project=current_project
+        user=current_user,
+        project=current_project,
     )
     logger.info(f"User '{current_user.id}' leave a project: '{project_id}'")
 

@@ -12,13 +12,13 @@ def create_access_token(subject: str | Any, expires_delta: timedelta = None) -> 
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(minutes=settings.srv.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = {"exp": expire, "sub": str(subject), "type": "access"}
 
     return jwt.encode(
         payload=to_encode,
-        key=settings.SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
+        key=settings.srv.SECRET_KEY,
+        algorithm=settings.srv.JWT_ALGORITHM,
     )
 
 
@@ -26,13 +26,13 @@ def create_refresh_token(subject: str | Any, expires_delta: timedelta = None) ->
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(minutes=settings.srv.REFRESH_TOKEN_EXPIRE_MINUTES)
     to_encode = {"exp": expire, "sub": str(subject), "type": "refresh"}
 
     return jwt.encode(
         payload=to_encode,
-        key=settings.SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
+        key=settings.srv.SECRET_KEY,
+        algorithm=settings.srv.JWT_ALGORITHM,
     )
 
 
@@ -40,21 +40,21 @@ def create_reset_token(subject: str | Any, expires_delta: timedelta = None) -> s
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.RESET_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(minutes=settings.srv.RESET_TOKEN_EXPIRE_MINUTES)
     to_encode = {"exp": expire, "sub": str(subject), "type": "reset"}
 
     return jwt.encode(
         payload=to_encode,
-        key=settings.SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
+        key=settings.srv.SECRET_KEY,
+        algorithm=settings.srv.JWT_ALGORITHM,
     )
 
 
 def decode_token(token: str) -> dict[str, Any]:
     return jwt.decode(
         jwt=token,
-        key=settings.SECRET_KEY,
-        algorithms=[settings.JWT_ALGORITHM],
+        key=settings.srv.SECRET_KEY,
+        algorithms=[settings.srv.JWT_ALGORITHM],
     )
 
 

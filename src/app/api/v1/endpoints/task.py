@@ -140,7 +140,8 @@ async def update_task_by_id(
 
     if current_task.project_id:
         await check_user_member_project(
-            user_id=current_user.id, project_id=current_task.project_id
+            user_id=current_user.id,
+            project_id=current_task.project_id,
         )
 
     task_updated = await repository.task.update(obj_new=task, obj_current=current_task)

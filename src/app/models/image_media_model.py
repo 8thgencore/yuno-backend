@@ -18,5 +18,5 @@ class ImageMedia(BaseUUIDModel, ImageMediaBase, table=True):
         sa_relationship_kwargs={
             "lazy": "joined",
             "primaryjoin": "ImageMedia.media_id==Media.id",
-        }
+        },
     )
