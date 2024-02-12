@@ -8,7 +8,7 @@ authors = ["8thgencore <8th@example.com>"]
 # Python version
 python = "^3.11"
 # FastApi and Extencions
-fastapi = { extras = ["all"], version = "^0.108.0" }
+fastapi = { extras = ["all"], version = "^0.109.1" }
 fastapi-cache2 = { extras = ["redis"], version = "^0.2.1" }
 fastapi-pagination = { extras = ["sqlalchemy"], version = "^0.12.14" }
 fastapi-async-sqlalchemy = "^0.6.0"
