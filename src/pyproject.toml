@@ -12,8 +12,8 @@ fastapi = { extras = ["all"], version = "^0.108.0" }
 fastapi-cache2 = { extras = ["redis"], version = "^0.2.1" }
 fastapi-pagination = { extras = ["sqlalchemy"], version = "^0.12.14" }
 fastapi-async-sqlalchemy = "^0.6.0"
-python-multipart = "^0.0.6"
-asyncer = "^0.0.2"
+python-multipart = "^0.0.9"
+asyncer = "^0.0.4"
 # ASGI server
 uvicorn = "^0.25.0"
 gunicorn = "^21.2.0"
@@ -40,9 +40,9 @@ pyjwt = { extras = ["crypto"], version = "^2.8.0" }
 [tool.poetry.group.dev.dependencies]
 yesqa = "^1.5.0"
 httpx = "^0.26.0"
-pytest = "^7.4.3"
+pytest = "^8.0.0"
 pytest-asyncio = "^0.23.2"
-ruff = "^0.1.11"
+ruff = "^0.2.1"
 interrogate = "^1.5.0"
 pre-commit = "^3.6.0"
 # mypy
@@ -58,7 +58,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 line-length = 99
 exclude = [".git", "__pycache__", ".mypy_cache", ".pytest_cache", "alembic"]
-select = [
+lint.select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
     "F",  # pyflakes
@@ -67,7 +67,7 @@ select = [
     "B",  # flake8-bugbear
     "UP", # pyupgrade
 ]
-ignore = [
+lint.ignore = [
     "B904",
     "B006",
     "E501", # line too long, handled by black
@@ -77,13 +77,13 @@ ignore = [
     "W191", # indentation contains tabs
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-third-party = ["fastapi", "pydantic", "starlette"]
 
-[tool.ruff.pyupgrade]
+[tool.ruff.lint.pyupgrade]
 # Preserve types, even if a file imports `from __future__ import annotations`.
 keep-runtime-typing = true
 
