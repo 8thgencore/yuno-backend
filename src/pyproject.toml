@@ -8,21 +8,21 @@ authors = ["8thgencore <8th@example.com>"]
 # Python version
 python = "^3.11"
 # FastApi and Extencions
-fastapi = { extras = ["all"], version = "^0.109.1" }
+fastapi = { extras = ["all"], version = "^0.109.2" }
 fastapi-cache2 = { extras = ["redis"], version = "^0.2.1" }
-fastapi-pagination = { extras = ["sqlalchemy"], version = "^0.12.14" }
-fastapi-async-sqlalchemy = "^0.6.0"
+fastapi-pagination = { extras = ["sqlalchemy"], version = "^0.12.16" }
+fastapi-async-sqlalchemy = "^0.6.1"
 python-multipart = "^0.0.9"
 asyncer = "^0.0.4"
 # ASGI server
-uvicorn = "^0.25.0"
+uvicorn = "^0.27.1"
 gunicorn = "^21.2.0"
 # Database
-sqlmodel = "^0.0.14"
-alembic = "^1.12.1"
+sqlmodel = "^0.0.16"
+alembic = "^1.13.1"
 asyncpg = "^0.29.0"
 # For S3
-minio = "^7.2.3"
+minio = "^7.2.4"
 Pillow = "^10.2.0"
 # Celery
 redis = "^4.6.0"
@@ -34,22 +34,22 @@ fastapi-mail = "^1.4.1"
 # Logger
 loguru = "^0.7.2"
 # Cryptography
-bcrypt = "^4.0.1"
+bcrypt = "^4.1.2"
 pyjwt = { extras = ["crypto"], version = "^2.8.0" }
 
 [tool.poetry.group.dev.dependencies]
 yesqa = "^1.5.0"
 httpx = "^0.26.0"
-pytest = "^8.0.0"
-pytest-asyncio = "^0.23.2"
-ruff = "^0.2.1"
+pytest = "^8.0.1"
+pytest-asyncio = "^0.23.5"
+ruff = "^0.2.2"
 interrogate = "^1.5.0"
-pre-commit = "^3.6.0"
+pre-commit = "^3.6.2"
 # mypy
-mypy = "^1.7.1"
-types-python-dateutil = "^2.8.19.14"
-types-redis = "^4.6.0.3"
-types-ujson = "^5.8.0.1"
+mypy = "^1.8.0"
+types-python-dateutil = "^2.8.19.20240106"
+types-redis = "^4.6.0.20240218"
+types-ujson = "^5.9.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
