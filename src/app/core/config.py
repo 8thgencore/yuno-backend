@@ -3,7 +3,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from fastapi_mail import ConnectionConfig
 from loguru import logger
 from pydantic import AnyHttpUrl, PostgresDsn, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
@@ -120,8 +119,7 @@ class MailConnectionConfig(BaseSettings):
     MAIL_SERVER: str | None
     MAIL_STARTTLS: bool | None
     MAIL_SSL_TLS: bool | None
-    EMAIL_TEMPLATES_DIR: Path | str | None = Path(__file__).parent.parent / "templates/"
-    EMAIL_CONNECTION_CONFIG: ConnectionConfig | None = None
+    TEMPLATE_FOLDER: Path | str | None = Path(__file__).parent.parent / "templates/"
 
     model_config = SettingsConfigDict(case_sensitive=True)
 

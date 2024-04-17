@@ -10,7 +10,6 @@ from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from loguru import logger
-from sqlalchemy.pool import QueuePool
 
 from app.api.deps import get_redis_client
 from app.api.v1.api import api_router as api_router_v1
@@ -23,6 +22,7 @@ from app.utils.celery_utils import create_celery
 async def lifespan(app: FastAPI):
     logger.info("Starting up...")
     redis_client = await get_redis_client()
+    logger.info("Init fastapi cache")
     FastAPICache.init(RedisBackend(redis_client), prefix="fastapi-cache")
 
     yield
@@ -59,7 +59,6 @@ def create_application() -> FastAPI:
             "pool_pre_ping": True,
             "pool_size": 4,
             "max_overflow": 64,
-            "poolclass": QueuePool,
         },
     )
 

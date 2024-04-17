@@ -3,7 +3,6 @@ from collections.abc import AsyncGenerator
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import QueuePool
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
@@ -20,7 +19,6 @@ engine = create_async_engine(
     future=True,
     pool_size=POOL_SIZE,
     max_overflow=64,
-    poolclass=QueuePool,
 )
 
 SessionLocal = sessionmaker(
