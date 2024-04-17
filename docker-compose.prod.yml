@@ -15,9 +15,18 @@ services:
     depends_on:
       - db
     networks:
-      external_network:
-        aliases:
-          - yuno
+      - traefik_net
+      - yuno_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.yuno.rule=Host(`yuno.axelx.ru`)"
+      - "traefik.http.routers.yuno.entrypoints=websecure"
+      - "traefik.http.routers.yuno.service=yuno"
+      - "traefik.http.routers.blog.tls=true"
+      - "traefik.http.routers.yuno.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.yuno.tls.domains[0].main=yuno.axelx.ru"
+      - "traefik.http.routers.yuno.tls.domains[0].sans=*.yuno.axelx.ru"
+      - "traefik.http.services.yuno.loadbalancer.server.port=8070"
 
   db:
     container_name: ${DB_CONTAINER_NAME:-yuno-db-container}
@@ -37,7 +46,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - external_network
+      - yuno_network
 
   redis-server:
     container_name: ${REDIS_CONTAINER_NAME:-yuno-redis-container}
@@ -58,7 +67,7 @@ services:
     environment:
       - ALLOW_EMPTY_PASSWORD=no
     networks:
-      - external_network
+      - yuno_network
 
   minio:
     container_name: ${MINIO_CONTAINER_NAME:-yuno-minio-container}
@@ -81,7 +90,7 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - external_network
+      - yuno_network
 
   celery-worker:
     container_name: ${CELERY_WORKER_CONTAINER_NAME:-yuno-celery-worker-container}
@@ -95,11 +104,12 @@ services:
       - redis-server
       - db
     networks:
-      - external_network
+      - yuno_network
 
 volumes:
   postgres_data:
 
 networks:
-  external_network:
+  traefik_net:
     external: true
+  yuno_network:
