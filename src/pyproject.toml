@@ -16,7 +16,7 @@ python-multipart = "^0.0.9"
 asyncer = "^0.0.5"
 # ASGI server
 uvicorn = "^0.29.0"
-gunicorn = "^21.2.0"
+gunicorn = "^22.0.0"
 # Database
 sqlmodel = "^0.0.16"
 alembic = "^1.13.1"
