@@ -94,3 +94,16 @@ _Using Makefile command_
 ```sh
 make add-dev-migration
 ```
+
+## Mail Client for send otp code
+
+[Link to the microservice **Mailfort** ](https://github.com/8thgencore/mailfort)
+
+### Generating files from .proto for mail:
+Execute the following command in the `src` directory of your project:
+
+```bash
+python -m grpc_tools.protoc -I=./proto --python_out=./app/generated/ --grpc_python_out=./app/generated/ ./proto/mail/mail.proto
+```
+
+This command will generate Python files for protobuf and gRPC in the `./src/proto/generated/` directory.

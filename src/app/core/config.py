@@ -1,6 +1,5 @@
 from enum import Enum
 from functools import lru_cache
-from pathlib import Path
 from typing import Any
 
 from loguru import logger
@@ -111,15 +110,9 @@ class CelerySettings(BaseSettings):
     WS_MESSAGE_QUEUE: str
 
 
-class MailConnectionConfig(BaseSettings):
-    MAIL_USERNAME: str | None
-    MAIL_PASSWORD: str | None
-    MAIL_FROM: str | None
-    MAIL_PORT: int | None
-    MAIL_SERVER: str | None
-    MAIL_STARTTLS: bool | None
-    MAIL_SSL_TLS: bool | None
-    TEMPLATE_FOLDER: Path | str | None = Path(__file__).parent.parent / "templates/"
+class MailClientConfig(BaseSettings):
+    MAIL_HOST: str | None
+    MAIL_PORT: str | None
 
     model_config = SettingsConfigDict(case_sensitive=True)
 
@@ -136,7 +129,7 @@ class Settings(BaseSettings):
     database: DatabaseSettings = DatabaseSettings()
     file_storage: FileStorageSettings = FileStorageSettings()
     celery: CelerySettings = CelerySettings()
-    mail: MailConnectionConfig = MailConnectionConfig()
+    mail: MailClientConfig = MailClientConfig()
     logging: LoggingConfig = LoggingConfig()
 
 

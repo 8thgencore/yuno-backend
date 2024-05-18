@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package mail;
+
+option go_package = "mail.v1;mailv1";
+
+service Mail {
+    rpc SendConfirmationEmail(SendRequest) returns (SendResponse);
+    rpc SendPasswordReset(SendRequest) returns (SendResponse);
+}
+
+message SendRequest {
+    string email = 1;
+    string otp_code = 2;
+}
+
+message SendResponse {
+    bool is_success = 1;
+}

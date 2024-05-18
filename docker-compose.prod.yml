@@ -22,7 +22,7 @@ services:
       - "traefik.http.routers.yuno.rule=Host(`yuno.axelx.ru`)"
       - "traefik.http.routers.yuno.entrypoints=websecure"
       - "traefik.http.routers.yuno.service=yuno"
-      - "traefik.http.routers.blog.tls=true"
+      - "traefik.http.routers.yuno.tls=true"
       - "traefik.http.routers.yuno.tls.certresolver=letsencrypt"
       - "traefik.http.routers.yuno.tls.domains[0].main=yuno.axelx.ru"
       - "traefik.http.routers.yuno.tls.domains[0].sans=*.yuno.axelx.ru"
