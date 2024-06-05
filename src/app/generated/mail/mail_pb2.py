@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\n\x0fmail/mail.proto\x12\x04mail".\n\x0bSendRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x10\n\x08otp_code\x18\x02 \x01(\t""\n\x0cSendResponse\x12\x12\n\nis_success\x18\x01 \x01(\x08\x32\x82\x01\n\x04Mail\x12>\n\x15SendConfirmationEmail\x12\x11.mail.SendRequest\x1a\x12.mail.SendResponse\x12:\n\x11SendPasswordReset\x12\x11.mail.SendRequest\x1a\x12.mail.SendResponseB\x10Z\x0email.v1;mailv1b\x06proto3',
+    b'\n\x0fmail/mail.proto\x12\x07mail.v1">\n\x1bSendEmailWithOTPCodeRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x10\n\x08otp_code\x18\x02 \x01(\t",\n\x08Response\x12\x0f\n\x07message\x18\x01 \x01(\t\x12\x0f\n\x07success\x18\x02 \x01(\x08"2\n\rErrorResponse\x12\x10\n\x08messages\x18\x01 \x03(\t\x12\x0f\n\x07success\x18\x02 \x01(\x08\x32\xbb\x01\n\x0bMailService\x12W\n\x1cSendConfirmationEmailOTPCode\x12$.mail.v1.SendEmailWithOTPCodeRequest\x1a\x11.mail.v1.Response\x12S\n\x18SendPasswordResetOTPCode\x12$.mail.v1.SendEmailWithOTPCodeRequest\x1a\x11.mail.v1.ResponseB&Z$github.com/8thgencore/mailfort/protob\x06proto3',
 )
 
 _globals = globals()
@@ -22,11 +22,13 @@ _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "mail.mail_pb2", _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
     _globals["DESCRIPTOR"]._loaded_options = None
-    _globals["DESCRIPTOR"]._serialized_options = b"Z\016mail.v1;mailv1"
-    _globals["_SENDREQUEST"]._serialized_start = 25
-    _globals["_SENDREQUEST"]._serialized_end = 71
-    _globals["_SENDRESPONSE"]._serialized_start = 73
-    _globals["_SENDRESPONSE"]._serialized_end = 107
-    _globals["_MAIL"]._serialized_start = 110
-    _globals["_MAIL"]._serialized_end = 240
+    _globals["DESCRIPTOR"]._serialized_options = b"Z$github.com/8thgencore/mailfort/proto"
+    _globals["_SENDEMAILWITHOTPCODEREQUEST"]._serialized_start = 28
+    _globals["_SENDEMAILWITHOTPCODEREQUEST"]._serialized_end = 90
+    _globals["_RESPONSE"]._serialized_start = 92
+    _globals["_RESPONSE"]._serialized_end = 136
+    _globals["_ERRORRESPONSE"]._serialized_start = 138
+    _globals["_ERRORRESPONSE"]._serialized_end = 188
+    _globals["_MAILSERVICE"]._serialized_start = 191
+    _globals["_MAILSERVICE"]._serialized_end = 378
 # @@protoc_insertion_point(module_scope)

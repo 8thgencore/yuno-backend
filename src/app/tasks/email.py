@@ -3,7 +3,7 @@ from celery import shared_task
 from loguru import logger
 
 from app.core.config import settings
-from app.generated.mail.mail_pb2 import SendRequest
+from app.generated.mail.mail_pb2 import SendEmailWithOTPCodeRequest
 from app.generated.mail.mail_pb2_grpc import MailStub
 
 
@@ -16,14 +16,14 @@ def send_verification_email(email_to: str, otp_code: int) -> None:
     stub = MailStub(channel)
 
     # Prepare the request message
-    request = SendRequest(email=email_to, otp_code=str(otp_code))
+    request = SendEmailWithOTPCodeRequest(email=email_to, otp_code=str(otp_code))
 
     try:
         # Call the SendConfirmationEmail RPC
-        response = stub.SendConfirmationEmail(request)
+        response = stub.SendConfirmationEmailOTPCode(request)
 
         # Log success or failure
-        if response.is_success:
+        if response.success:
             logger.info(f"Otp code has been successfully sent to e-mail: '{email_to}'")
         else:
             logger.error("Failed to send confirmation email.")

@@ -4,8 +4,7 @@
 import warnings
 
 import grpc
-
-from app.generated.mail import mail_pb2 as mail_dot_mail__pb2
+from mail import mail_pb2 as mail_dot_mail__pb2
 
 GRPC_GENERATED_VERSION = "1.63.0"
 GRPC_VERSION = grpc.__version__
@@ -34,7 +33,7 @@ if _version_not_supported:
     )
 
 
-class MailStub:
+class MailServiceStub:
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -43,59 +42,62 @@ class MailStub:
         Args:
             channel: A grpc.Channel.
         """
-        self.SendConfirmationEmail = channel.unary_unary(
-            "/mail.Mail/SendConfirmationEmail",
-            request_serializer=mail_dot_mail__pb2.SendRequest.SerializeToString,
-            response_deserializer=mail_dot_mail__pb2.SendResponse.FromString,
+        self.SendConfirmationEmailOTPCode = channel.unary_unary(
+            "/mail.v1.MailService/SendConfirmationEmailOTPCode",
+            request_serializer=mail_dot_mail__pb2.SendEmailWithOTPCodeRequest.SerializeToString,
+            response_deserializer=mail_dot_mail__pb2.Response.FromString,
             _registered_method=True,
         )
-        self.SendPasswordReset = channel.unary_unary(
-            "/mail.Mail/SendPasswordReset",
-            request_serializer=mail_dot_mail__pb2.SendRequest.SerializeToString,
-            response_deserializer=mail_dot_mail__pb2.SendResponse.FromString,
+        self.SendPasswordResetOTPCode = channel.unary_unary(
+            "/mail.v1.MailService/SendPasswordResetOTPCode",
+            request_serializer=mail_dot_mail__pb2.SendEmailWithOTPCodeRequest.SerializeToString,
+            response_deserializer=mail_dot_mail__pb2.Response.FromString,
             _registered_method=True,
         )
 
 
-class MailServicer:
+class MailServiceServicer:
     """Missing associated documentation comment in .proto file."""
 
-    def SendConfirmationEmail(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+    def SendConfirmationEmailOTPCode(self, request, context):
+        """Sends a confirmation email otp code."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details("Method not implemented!")
         raise NotImplementedError("Method not implemented!")
 
-    def SendPasswordReset(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+    def SendPasswordResetOTPCode(self, request, context):
+        """Sends a password reset otp code."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details("Method not implemented!")
         raise NotImplementedError("Method not implemented!")
 
 
-def add_MailServicer_to_server(servicer, server):
+def add_MailServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-        "SendConfirmationEmail": grpc.unary_unary_rpc_method_handler(
-            servicer.SendConfirmationEmail,
-            request_deserializer=mail_dot_mail__pb2.SendRequest.FromString,
-            response_serializer=mail_dot_mail__pb2.SendResponse.SerializeToString,
+        "SendConfirmationEmailOTPCode": grpc.unary_unary_rpc_method_handler(
+            servicer.SendConfirmationEmailOTPCode,
+            request_deserializer=mail_dot_mail__pb2.SendEmailWithOTPCodeRequest.FromString,
+            response_serializer=mail_dot_mail__pb2.Response.SerializeToString,
         ),
-        "SendPasswordReset": grpc.unary_unary_rpc_method_handler(
-            servicer.SendPasswordReset,
-            request_deserializer=mail_dot_mail__pb2.SendRequest.FromString,
-            response_serializer=mail_dot_mail__pb2.SendResponse.SerializeToString,
+        "SendPasswordResetOTPCode": grpc.unary_unary_rpc_method_handler(
+            servicer.SendPasswordResetOTPCode,
+            request_deserializer=mail_dot_mail__pb2.SendEmailWithOTPCodeRequest.FromString,
+            response_serializer=mail_dot_mail__pb2.Response.SerializeToString,
         ),
     }
-    generic_handler = grpc.method_handlers_generic_handler("mail.Mail", rpc_method_handlers)
+    generic_handler = grpc.method_handlers_generic_handler(
+        "mail.v1.MailService",
+        rpc_method_handlers,
+    )
     server.add_generic_rpc_handlers((generic_handler,))
 
 
 # This class is part of an EXPERIMENTAL API.
-class Mail:
+class MailService:
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def SendConfirmationEmail(
+    def SendConfirmationEmailOTPCode(
         request,
         target,
         options=(),
@@ -110,9 +112,9 @@ class Mail:
         return grpc.experimental.unary_unary(
             request,
             target,
-            "/mail.Mail/SendConfirmationEmail",
-            mail_dot_mail__pb2.SendRequest.SerializeToString,
-            mail_dot_mail__pb2.SendResponse.FromString,
+            "/mail.v1.MailService/SendConfirmationEmailOTPCode",
+            mail_dot_mail__pb2.SendEmailWithOTPCodeRequest.SerializeToString,
+            mail_dot_mail__pb2.Response.FromString,
             options,
             channel_credentials,
             insecure,
@@ -125,7 +127,7 @@ class Mail:
         )
 
     @staticmethod
-    def SendPasswordReset(
+    def SendPasswordResetOTPCode(
         request,
         target,
         options=(),
@@ -140,9 +142,9 @@ class Mail:
         return grpc.experimental.unary_unary(
             request,
             target,
-            "/mail.Mail/SendPasswordReset",
-            mail_dot_mail__pb2.SendRequest.SerializeToString,
-            mail_dot_mail__pb2.SendResponse.FromString,
+            "/mail.v1.MailService/SendPasswordResetOTPCode",
+            mail_dot_mail__pb2.SendEmailWithOTPCodeRequest.SerializeToString,
+            mail_dot_mail__pb2.Response.FromString,
             options,
             channel_credentials,
             insecure,

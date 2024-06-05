@@ -1,19 +1,31 @@
 syntax = "proto3";
 
-package mail;
+option go_package = "github.com/8thgencore/mailfort/proto";
 
-option go_package = "mail.v1;mailv1";
+package mail.v1;
 
-service Mail {
-    rpc SendConfirmationEmail(SendRequest) returns (SendResponse);
-    rpc SendPasswordReset(SendRequest) returns (SendResponse);
-}
-
-message SendRequest {
+// The request message containing the email and otp code.
+message SendEmailWithOTPCodeRequest {
     string email = 1;
     string otp_code = 2;
 }
 
-message SendResponse {
-    bool is_success = 1;
+// The response message.
+message Response {
+    string message = 1;
+    bool success = 2;
+}
+
+// The error response message.
+message ErrorResponse {
+    repeated string messages = 1;
+    bool success = 2;
+}
+
+service MailService {
+    // Sends a confirmation email otp code.
+    rpc SendConfirmationEmailOTPCode(SendEmailWithOTPCodeRequest) returns (Response);
+
+    // Sends a password reset otp code.
+    rpc SendPasswordResetOTPCode(SendEmailWithOTPCodeRequest) returns (Response);
 }
