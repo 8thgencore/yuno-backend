@@ -4,7 +4,8 @@
 import warnings
 
 import grpc
-from mail import mail_pb2 as mail_dot_mail__pb2
+
+from app.generated.mail import mail_pb2 as mail_dot_mail__pb2
 
 GRPC_GENERATED_VERSION = "1.63.0"
 GRPC_VERSION = grpc.__version__

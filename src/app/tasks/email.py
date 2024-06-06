@@ -4,7 +4,7 @@ from loguru import logger
 
 from app.core.config import settings
 from app.generated.mail.mail_pb2 import SendEmailWithOTPCodeRequest
-from app.generated.mail.mail_pb2_grpc import MailStub
+from app.generated.mail.mail_pb2_grpc import MailServiceStub
 
 
 @shared_task(name="send_verification_email")
@@ -13,7 +13,7 @@ def send_verification_email(email_to: str, otp_code: int) -> None:
     channel = grpc.insecure_channel(f"{settings.mail.MAIL_HOST}:{settings.mail.MAIL_PORT}")
 
     # Create a gRPC stub for the Mail service
-    stub = MailStub(channel)
+    stub = MailServiceStub(channel)
 
     # Prepare the request message
     request = SendEmailWithOTPCodeRequest(email=email_to, otp_code=str(otp_code))
