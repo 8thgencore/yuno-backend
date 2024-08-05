@@ -8,7 +8,8 @@ FROM python:3.11-slim-buster AS base
 RUN apt-get update \
   && apt-get upgrade -y \
   && apt-get install -y --no-install-recommends curl git build-essential netcat gcc postgresql \
-  && apt-get autoremove -y
+  && apt-get autoremove -y \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install poetry using the official script
 ENV POETRY_HOME="/opt/poetry"
