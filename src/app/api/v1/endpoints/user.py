@@ -137,9 +137,24 @@ async def update_user_by_id(
     return create_response(data=user_updated)
 
 
+@router.delete("/me")
+async def delete_my_account(
+    current_user: User = Depends(deps.get_current_user()),
+) -> IDeleteResponseBase[IUserRead]:
+    """Delete my own account."""
+    try:
+        user = await repository.user.remove(id=current_user.id)
+        logger.info(f"User '{current_user.id}' deleted their own account")
+
+        return create_response(data=user, message="Your account has been deleted.")
+    except Exception as e:
+        logger.error(f"Error deleting user '{current_user.id}': {e}")
+        return Response("Internal server error", status_code=500)
+
+
 @router.delete("/{user_id}")
 async def remove_user_by_id(
-    user: User = Depends(user_deps.is_valid_user),  # user_id
+    user: User = Depends(user_deps.is_valid_user),
     current_user: User = Depends(deps.get_current_user(required_roles=[IRoleEnum.admin])),
 ) -> IDeleteResponseBase[IUserRead]:
     """Delete a user by his/her id.

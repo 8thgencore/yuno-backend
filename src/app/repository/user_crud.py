@@ -6,7 +6,10 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.security import get_password_hash, verify_password
 from app.models.image_media_model import ImageMedia
+from app.models.links_model import ProjectUserLink
 from app.models.media_model import Media
+from app.models.project_model import Project
+from app.models.task_model import Task
 from app.models.user_model import User
 from app.repository.base_crud import CRUDBase
 from app.schemas.media_schema import IMediaCreate
@@ -73,6 +76,31 @@ class CRUDUser(CRUDBase[User, IUserCreate, IUserUpdate]):
         if not verify_password(password, user.hashed_password):
             return None
         return user
+
+    async def remove(self, *, id: str, db_session: AsyncSession | None = None) -> Project:
+        db_session = db_session or super().get_db().session
+
+        # delete links
+        response = await db_session.execute(
+            select(ProjectUserLink).where(ProjectUserLink.user_id == id),
+        )
+        obj = response.scalars().all()
+        for ob in obj:
+            await db_session.delete(ob)
+
+        # delete all task project
+        response = await db_session.execute(select(Task).where(Task.created_by_id == id))
+        obj = response.scalars().all()
+        for ob in obj:
+            await db_session.delete(ob)
+
+        # delete user
+        response = await db_session.execute(select(User).where(User.id == id))
+        obj = response.scalar_one()
+        await db_session.delete(obj)
+
+        await db_session.commit()
+        return obj
 
     async def update_photo(
         self,
