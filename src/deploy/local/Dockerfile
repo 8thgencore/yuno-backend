@@ -42,7 +42,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 - --uninstall \
 # -----------------------------------------------------------------------------
 # App-image stage
 # -----------------------------------------------------------------------------
-FROM install as app-image
+FROM install AS app-image
 
 # set working directory
 WORKDIR /usr/src
