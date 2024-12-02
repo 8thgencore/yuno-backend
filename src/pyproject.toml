@@ -12,7 +12,7 @@ fastapi = { extras = ["all"], version = "^0.115.0" }
 fastapi-cache2 = { extras = ["redis"], version = "^0.2.2" }
 fastapi-pagination = { extras = ["sqlalchemy"], version = "^0.12.27" }
 fastapi-async-sqlalchemy = "^0.6.1"
-python-multipart = "^0.0.9"
+python-multipart = "^0.0.18"
 asyncer = "^0.0.8"
 # ASGI server
 uvicorn = "^0.30.6"
